@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models;
+
+use Database\Factories\HomestayMediaFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+#[Fillable(['homestay_id', 'file_path', 'type', 'category', 'custom_category', 'is_primary'])]
+class HomestayMedia extends Model
+{
+    /** @use HasFactory<HomestayMediaFactory> */
+    use HasFactory;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_primary' => 'boolean',
+        ];
+    }
+
+    /**
+     * @return BelongsTo<Homestay, $this>
+     */
+    public function homestay(): BelongsTo
+    {
+        return $this->belongsTo(Homestay::class);
+    }
+}

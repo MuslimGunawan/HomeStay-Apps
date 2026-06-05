@@ -1,0 +1,655 @@
+import { useState } from 'react';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
+import { 
+    Hotel, 
+    Save, 
+    ChevronLeft, 
+    MapPin, 
+    DollarSign, 
+    Users, 
+    Sparkles, 
+    Plus, 
+    Trash2, 
+    Upload, 
+    ChevronRight,
+    Compass
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+
+interface Amenity {
+    id: number;
+    name: string;
+    description: string;
+}
+
+interface CreateProps {
+    amenities: Amenity[];
+    categories: string[];
+}
+
+export default function Create({ amenities = [], categories = [] }: CreateProps) {
+    const { auth } = usePage().props as any;
+    const prefix = auth?.user?.role === 'admin' ? 'admin' : 'host';
+    const [activeTab, setActiveTab] = useState<'info' | 'amenity' | 'media'>('info');
+    const [isCustomCategory, setIsCustomCategory] = useState(false);
+
+    // Custom amenities state
+    const [customAmenities, setCustomAmenities] = useState<string[]>(['']);
+    
+    // Media helpers states
+    const [otherMediaFiles, setOtherMediaFiles] = useState<{ file: File | null; category: string; customCategory: string }[]>([]);
+    const [roomMediaFiles, setRoomMediaFiles] = useState<{ file: File | null; category: string; customCategory: string }[]>([]);
+
+    const form = useForm({
+        name: '',
+        description: '',
+        address: '',
+        city: 'Lhokseumawe', // Default Lhokseumawe context
+        price_per_night: '',
+        max_guests: '2',
+        latitude: '5.1801', // Lhokseumawe default coords
+        longitude: '97.1407',
+        category: '',
+        amenities: [] as number[],
+        custom_amenities: [] as string[],
+        primary_image: null as File | null,
+        
+        // Dynamic arrays mapped for standard multipart upload validation
+        other_media: [] as File[],
+        other_media_categories: [] as string[],
+        other_media_customs: [] as string[],
+        
+        room_media: [] as File[],
+        room_media_categories: [] as string[],
+        room_media_customs: [] as string[],
+    });
+
+    const addCustomAmenity = () => {
+        setCustomAmenities([...customAmenities, '']);
+    };
+
+    const removeCustomAmenity = (index: number) => {
+        const updated = customAmenities.filter((_, i) => i !== index);
+        setCustomAmenities(updated.length > 0 ? updated : ['']);
+    };
+
+    const handleCustomAmenityChange = (index: number, val: string) => {
+        const updated = [...customAmenities];
+        updated[index] = val;
+        setCustomAmenities(updated);
+    };
+
+    const addOtherMedia = () => {
+        setOtherMediaFiles([...otherMediaFiles, { file: null, category: 'custom', customCategory: '' }]);
+    };
+
+    const removeOtherMedia = (index: number) => {
+        setOtherMediaFiles(otherMediaFiles.filter((_, i) => i !== index));
+    };
+
+    const addRoomMedia = () => {
+        setRoomMediaFiles([...roomMediaFiles, { file: null, category: 'bedroom_1', customCategory: '' }]);
+    };
+
+    const removeRoomMedia = (index: number) => {
+        setRoomMediaFiles(roomMediaFiles.filter((_, i) => i !== index));
+    };
+
+    const handleAmenityToggle = (id: number) => {
+        const checked = form.data.amenities.includes(id);
+        if (checked) {
+            form.setData('amenities', form.data.amenities.filter(item => item !== id));
+        } else {
+            form.setData('amenities', [...form.data.amenities, id]);
+        }
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // 1. Gather custom amenities
+        const filteredCustoms = customAmenities.filter(item => item.trim() !== '');
+        
+        // 2. Gather other media lists
+        const otherFiles: File[] = [];
+        const otherCats: string[] = [];
+        const otherCusts: string[] = [];
+        otherMediaFiles.forEach(item => {
+            if (item.file) {
+                otherFiles.push(item.file);
+                otherCats.push(item.category);
+                otherCusts.push(item.customCategory);
+            }
+        });
+
+        // 3. Gather room media lists
+        const rmFiles: File[] = [];
+        const rmCats: string[] = [];
+        const rmCusts: string[] = [];
+        roomMediaFiles.forEach(item => {
+            if (item.file) {
+                rmFiles.push(item.file);
+                rmCats.push(item.category);
+                rmCusts.push(item.customCategory);
+            }
+        });
+
+        // Set all to form payload
+        form.setData((prev: any) => ({
+            ...prev,
+            custom_amenities: filteredCustoms,
+            other_media: otherFiles,
+            other_media_categories: otherCats,
+            other_media_customs: otherCusts,
+            room_media: rmFiles,
+            room_media_categories: rmCats,
+            room_media_customs: rmCusts,
+        }));
+
+        // Send post request as multipart form
+        form.post(route(`${prefix}.homestays.store` as any), {
+            forceFormData: true,
+            onSuccess: () => {
+                toast.success('Homestay baru berhasil didaftarkan secara premium.');
+            },
+            onError: () => {
+                toast.error('Gagal mendaftarkan homestay. Periksa kembali form isian Anda.');
+            }
+        });
+    };
+
+    return (
+        <div className="flex-1 space-y-8 p-8 max-w-4xl mx-auto text-left">
+            <Head title="Tambah Homestay Baru" />
+
+            {/* Title Bar */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="space-y-1">
+                    <span className="text-xs font-bold text-gold uppercase tracking-widest">
+                        {auth?.user?.role === 'admin' ? 'Portal Administrator' : 'Portal Pemilik'}
+                    </span>
+                    <h1 className="font-outfit text-3xl font-extrabold tracking-tight">Daftarkan Kamar Homestay</h1>
+                    <p className="text-sm text-muted-foreground">Isi data akomodasi, ketersediaan fasilitas, serta unggah media resolusi tinggi.</p>
+                </div>
+                <Button 
+                    onClick={() => router.get(route(`${prefix}.homestays` as any))}
+                    variant="ghost"
+                    className="text-white/60 hover:text-white flex gap-1.5 items-center text-xs font-bold"
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                    Kembali
+                </Button>
+            </div>
+
+            {/* Form Wizard Tabs Navigation */}
+            <div className="flex border-b border-white/5 pb-2 overflow-x-auto gap-2">
+                <button
+                    onClick={() => setActiveTab('info')}
+                    className={`text-[10px] font-bold uppercase tracking-wider px-4 py-2.5 rounded-full border transition-all duration-300 ${
+                        activeTab === 'info'
+                            ? 'bg-gold border-gold text-deep-black scale-105'
+                            : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:border-white/30'
+                    }`}
+                >
+                    1. Info Utama Properti
+                </button>
+                <button
+                    onClick={() => setActiveTab('amenity')}
+                    className={`text-[10px] font-bold uppercase tracking-wider px-4 py-2.5 rounded-full border transition-all duration-300 ${
+                        activeTab === 'amenity'
+                            ? 'bg-gold border-gold text-deep-black scale-105'
+                            : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:border-white/30'
+                    }`}
+                >
+                    2. Fasilitas & Kustomisasi
+                </button>
+                <button
+                    onClick={() => setActiveTab('media')}
+                    className={`text-[10px] font-bold uppercase tracking-wider px-4 py-2.5 rounded-full border transition-all duration-300 ${
+                        activeTab === 'media'
+                            ? 'bg-gold border-gold text-deep-black scale-105'
+                            : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:border-white/30'
+                    }`}
+                >
+                    3. Galeri Media Foto & Video
+                </button>
+            </div>
+
+            {/* Form Box */}
+            <form onSubmit={handleSubmit}>
+                <Card className="border border-white/5 bg-[#0f0f0f] rounded-3xl overflow-hidden p-8 shadow-2xl">
+                    <CardContent className="space-y-6 p-0">
+                        {/* TAB 1: BASIC INFORMATION */}
+                        {activeTab === 'info' && (
+                            <div className="space-y-6">
+                                <div className="space-y-1.5 text-left">
+                                    <Label htmlFor="name" className="text-xs text-white/60">Nama Kamar / Homestay</Label>
+                                    <Input 
+                                        id="name"
+                                        placeholder="Cth: Deluxe Luxury Gayo Room"
+                                        value={form.data.name}
+                                        onChange={(e) => form.setData('name', e.target.value)}
+                                        className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                    />
+                                    {form.errors.name && <span className="text-[10px] text-rose-400">{form.errors.name}</span>}
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-1.5 text-left">
+                                        <Label htmlFor="category" className="text-xs text-white/60">Kategori Kamar</Label>
+                                        <select
+                                            id="category-select"
+                                            value={isCustomCategory ? '__custom__' : form.data.category}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === '__custom__') {
+                                                    setIsCustomCategory(true);
+                                                    form.setData('category', '');
+                                                } else {
+                                                    setIsCustomCategory(false);
+                                                    form.setData('category', val);
+                                                }
+                                            }}
+                                            className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-gold focus:outline-none"
+                                        >
+                                            <option value="">-- Pilih Kategori --</option>
+                                            {Array.from(new Set(['Deluxe', 'Executive', 'Heritage', 'Family', ...categories])).map((cat) => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
+                                            <option value="__custom__">Tulis Kustom / Kategori Baru</option>
+                                        </select>
+                                        {form.errors.category && <span className="text-[10px] text-rose-400">{form.errors.category}</span>}
+                                    </div>
+
+                                    {isCustomCategory && (
+                                        <div className="space-y-1.5 text-left animate-in fade-in duration-200">
+                                            <Label htmlFor="category-custom" className="text-xs text-white/60">Ketik Kategori Baru</Label>
+                                            <Input
+                                                id="category-custom"
+                                                placeholder="Cth: Suite, Cabin, Penthouse..."
+                                                value={form.data.category}
+                                                onChange={(e) => form.setData('category', e.target.value)}
+                                                className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-1.5 text-left">
+                                        <Label htmlFor="city" className="text-xs text-white/60">Kota / Kabupaten</Label>
+                                        <Input 
+                                            id="city"
+                                            value={form.data.city}
+                                            onChange={(e) => form.setData('city', e.target.value)}
+                                            className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                        />
+                                        {form.errors.city && <span className="text-[10px] text-rose-400">{form.errors.city}</span>}
+                                    </div>
+
+                                    <div className="space-y-1.5 text-left">
+                                        <Label htmlFor="address" className="text-xs text-white/60">Alamat Lengkap Properti</Label>
+                                        <Input 
+                                            id="address"
+                                            placeholder="Cth: Jl. Merdeka No. 12, Banda Sakti"
+                                            value={form.data.address}
+                                            onChange={(e) => form.setData('address', e.target.value)}
+                                            className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                        />
+                                        {form.errors.address && <span className="text-[10px] text-rose-400">{form.errors.address}</span>}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-1.5 text-left">
+                                        <Label htmlFor="price" className="text-xs text-white/60">Harga Per Malam (Rp)</Label>
+                                        <Input 
+                                            id="price"
+                                            type="number"
+                                            placeholder="Cth: 750000"
+                                            value={form.data.price_per_night}
+                                            onChange={(e) => form.setData('price_per_night', e.target.value)}
+                                            className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                        />
+                                        {form.errors.price_per_night && <span className="text-[10px] text-rose-400">{form.errors.price_per_night}</span>}
+                                    </div>
+
+                                    <div className="space-y-1.5 text-left">
+                                        <Label htmlFor="guests" className="text-xs text-white/60">Kapasitas Maksimal Tamu</Label>
+                                        <Input 
+                                            id="guests"
+                                            type="number"
+                                            min="1"
+                                            value={form.data.max_guests}
+                                            onChange={(e) => form.setData('max_guests', e.target.value)}
+                                            className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                        />
+                                        {form.errors.max_guests && <span className="text-[10px] text-rose-400">{form.errors.max_guests}</span>}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-1.5 text-left">
+                                        <Label htmlFor="latitude" className="text-xs text-white/60">Latitude Koordinat Peta</Label>
+                                        <Input 
+                                            id="latitude"
+                                            value={form.data.latitude}
+                                            onChange={(e) => form.setData('latitude', e.target.value)}
+                                            className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5 text-left">
+                                        <Label htmlFor="longitude" className="text-xs text-white/60">Longitude Koordinat Peta</Label>
+                                        <Input 
+                                            id="longitude"
+                                            value={form.data.longitude}
+                                            onChange={(e) => form.setData('longitude', e.target.value)}
+                                            className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1.5 text-left">
+                                    <Label htmlFor="desc" className="text-xs text-white/60">Deskripsi Kamar & Kelebihan Properti</Label>
+                                    <textarea
+                                        id="desc"
+                                        rows={6}
+                                        placeholder="Berikan narasi mewah mengenai kenyamanan, pemandangan luar, dan spesifikasi kamar tidur/ruangan..."
+                                        value={form.data.description}
+                                        onChange={(e) => form.setData('description', e.target.value)}
+                                        className="w-full bg-black/40 border border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold focus:outline-none"
+                                    ></textarea>
+                                    {form.errors.description && <span className="text-[10px] text-rose-400">{form.errors.description}</span>}
+                                </div>
+
+                                <div className="flex justify-end pt-4">
+                                    <Button
+                                        type="button"
+                                        onClick={() => setActiveTab('amenity')}
+                                        className="bg-gold hover:bg-white text-black font-bold text-xs px-6 py-5 rounded-xl flex gap-1 items-center"
+                                    >
+                                        Selanjutnya <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB 2: AMENITIES & CUSTOM ADDITIONS */}
+                        {activeTab === 'amenity' && (
+                            <div className="space-y-6">
+                                {/* Standard Amenities Checklist */}
+                                <div className="space-y-3 text-left">
+                                    <Label className="text-xs text-white/60 block font-bold tracking-wider">Fasilitas Standar Global</Label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 bg-black/25 p-6 rounded-2xl border border-white/5">
+                                        {amenities.map((item) => (
+                                            <label key={item.id} className="flex items-center space-x-2.5 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={form.data.amenities.includes(item.id)}
+                                                    onChange={() => handleAmenityToggle(item.id)}
+                                                    className="rounded border-white/20 bg-black text-gold focus:ring-gold accent-gold"
+                                                />
+                                                <span className="text-xs text-white/70 hover:text-white transition-colors">{item.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Custom Amenities Fields */}
+                                <div className="space-y-4 text-left border-t border-white/5 pt-6">
+                                    <div className="flex justify-between items-center">
+                                        <Label className="text-xs text-white/60 block font-bold tracking-wider">Aduan Tambahan Fasilitas Kustom</Label>
+                                        <Button
+                                            type="button"
+                                            onClick={addCustomAmenity}
+                                            variant="outline"
+                                            className="border-gold/30 text-gold hover:bg-gold/10 text-[10px] font-bold py-1 px-3 rounded-full"
+                                        >
+                                            <Plus className="h-3 w-3 mr-1" /> Tambah Kustom
+                                        </Button>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        {customAmenities.map((val, idx) => (
+                                            <div key={idx} className="flex gap-3 items-center">
+                                                <Input 
+                                                    placeholder="Cth: Gratis Akun Netflix, Sarapan Pagi Mewah, Alat BBQ Lengkap..."
+                                                    value={val}
+                                                    onChange={(e) => handleCustomAmenityChange(idx, e.target.value)}
+                                                    className="flex-1 bg-black/40 border-white/10 px-4 py-2.5 rounded-xl text-xs text-white focus:border-gold"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => removeCustomAmenity(idx)}
+                                                    className="bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/20 p-2.5 h-9 w-9 rounded-xl shrink-0"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between pt-6 border-t border-white/5">
+                                    <Button
+                                        type="button"
+                                        onClick={() => setActiveTab('info')}
+                                        variant="secondary"
+                                        className="text-xs font-bold py-5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white"
+                                    >
+                                        Kembali
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        onClick={() => setActiveTab('media')}
+                                        className="bg-gold hover:bg-white text-black font-bold text-xs px-6 py-5 rounded-xl flex gap-1 items-center"
+                                    >
+                                        Selanjutnya <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB 3: MEDIA UPLOAD & CATEGORIZATION */}
+                        {activeTab === 'media' && (
+                            <div className="space-y-6">
+                                {/* Primary Exterior Cover File */}
+                                <div className="space-y-1.5 text-left bg-gold/5 p-6 rounded-2xl border border-gold/10">
+                                    <Label htmlFor="primary" className="text-xs text-white font-bold block">1. Foto Utama Sampul Luar (Exterior Facade Cover)</Label>
+                                    <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
+                                        Foto ini wajib diunggah. Kami akan menempelkan logo watermark secara lossless di pojok gambar. Gunakan foto tampak luar terindah (maks. 15MB).
+                                    </p>
+                                    <Input 
+                                        id="primary"
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => form.setData('primary_image', e.target.files ? e.target.files[0] : null)}
+                                        className="w-full bg-black/40 border-white/10 mt-3 px-4 py-2 rounded-xl text-xs text-white focus:border-gold cursor-pointer"
+                                    />
+                                    {form.errors.primary_image && <span className="text-[10px] text-rose-400 block mt-1">{form.errors.primary_image}</span>}
+                                </div>
+
+                                {/* Other Exterior Media */}
+                                <div className="space-y-4 text-left border-t border-white/5 pt-6">
+                                    <div className="flex justify-between items-center">
+                                        <Label className="text-xs text-white/80 block font-bold">2. Galeri Area Luar / Exterior Lainnya (Gambar / Video)</Label>
+                                        <Button
+                                            type="button"
+                                            onClick={addOtherMedia}
+                                            variant="outline"
+                                            className="border-gold/30 text-gold hover:bg-gold/10 text-[10px] font-bold py-1 px-3 rounded-full"
+                                        >
+                                            <Plus className="h-3 w-3 mr-1" /> Tambah Media Luar
+                                        </Button>
+                                    </div>
+
+                                    {otherMediaFiles.map((val, idx) => (
+                                        <div key={idx} className="bg-black/20 border border-white/5 p-5 rounded-2xl space-y-3 relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeOtherMedia(idx)}
+                                                className="absolute top-4 right-4 text-white/40 hover:text-rose-400 transition-colors"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[10px] text-white/50">File Gambar / Video Walkthrough (Maks 100MB)</Label>
+                                                    <Input 
+                                                        type="file"
+                                                        accept="image/*,video/*"
+                                                        onChange={(e) => {
+                                                            const updated = [...otherMediaFiles];
+                                                            updated[idx].file = e.target.files ? e.target.files[0] : null;
+                                                            setOtherMediaFiles(updated);
+                                                        }}
+                                                        className="w-full bg-black/40 border-white/10 text-xs cursor-pointer"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[10px] text-white/50">Kategori Ruangan</Label>
+                                                    <select
+                                                        value={val.category}
+                                                        onChange={(e) => {
+                                                            const updated = [...otherMediaFiles];
+                                                            updated[idx].category = e.target.value;
+                                                            setOtherMediaFiles(updated);
+                                                        }}
+                                                        className="w-full rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white focus:border-gold focus:outline-none"
+                                                    >
+                                                        <option value="exterior_front">Halaman Depan</option>
+                                                        <option value="garden">Taman</option>
+                                                        <option value="pool">Kolam Renang</option>
+                                                        <option value="custom">Kustom / Ketik Manual</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {val.category === 'custom' && (
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[10px] text-white/50">Nama Kategori Kustom</Label>
+                                                    <Input 
+                                                        placeholder="Cth: Area BBQ, Balkon Atas, Gazebo..."
+                                                        value={val.customCategory}
+                                                        onChange={(e) => {
+                                                            const updated = [...otherMediaFiles];
+                                                            updated[idx].customCategory = e.target.value;
+                                                            setOtherMediaFiles(updated);
+                                                        }}
+                                                        className="w-full bg-black/40 border-white/10 text-xs"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Room/Interior Media */}
+                                <div className="space-y-4 text-left border-t border-white/5 pt-6">
+                                    <div className="flex justify-between items-center">
+                                        <Label className="text-xs text-white/80 block font-bold">3. Galeri Kamar & Ruangan Dalam / Interior (Foto / Video)</Label>
+                                        <Button
+                                            type="button"
+                                            onClick={addRoomMedia}
+                                            variant="outline"
+                                            className="border-gold/30 text-gold hover:bg-gold/10 text-[10px] font-bold py-1 px-3 rounded-full"
+                                        >
+                                            <Plus className="h-3 w-3 mr-1" /> Tambah Media Dalam
+                                        </Button>
+                                    </div>
+
+                                    {roomMediaFiles.map((val, idx) => (
+                                        <div key={idx} className="bg-black/20 border border-white/5 p-5 rounded-2xl space-y-3 relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeRoomMedia(idx)}
+                                                className="absolute top-4 right-4 text-white/40 hover:text-rose-400 transition-colors"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[10px] text-white/50">File Gambar / Video Walkthrough (Maks 100MB)</Label>
+                                                    <Input 
+                                                        type="file"
+                                                        accept="image/*,video/*"
+                                                        onChange={(e) => {
+                                                            const updated = [...roomMediaFiles];
+                                                            updated[idx].file = e.target.files ? e.target.files[0] : null;
+                                                            setRoomMediaFiles(updated);
+                                                        }}
+                                                        className="w-full bg-black/40 border-white/10 text-xs cursor-pointer"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[10px] text-white/50">Kategori Ruangan</Label>
+                                                    <select
+                                                        value={val.category}
+                                                        onChange={(e) => {
+                                                            const updated = [...roomMediaFiles];
+                                                            updated[idx].category = e.target.value;
+                                                            setRoomMediaFiles(updated);
+                                                        }}
+                                                        className="w-full rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white focus:border-gold focus:outline-none"
+                                                    >
+                                                        <option value="bedroom_1">Kamar Tidur Utama</option>
+                                                        <option value="bedroom_2">Kamar Tidur 2</option>
+                                                        <option value="bathroom">Toilet / Kamar Mandi</option>
+                                                        <option value="living_room">Ruang Tamu</option>
+                                                        <option value="kitchen">Dapur</option>
+                                                        <option value="custom">Kustom / Ketik Manual</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {val.category === 'custom' && (
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[10px] text-white/50">Nama Kategori Kustom</Label>
+                                                    <Input 
+                                                        placeholder="Cth: Ruang Makan, Tempat Jemur, Kamar Anak..."
+                                                        value={val.customCategory}
+                                                        onChange={(e) => {
+                                                            const updated = [...roomMediaFiles];
+                                                            updated[idx].customCategory = e.target.value;
+                                                            setRoomMediaFiles(updated);
+                                                        }}
+                                                        className="w-full bg-black/40 border-white/10 text-xs"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="flex justify-between pt-6 border-t border-white/5">
+                                    <Button
+                                        type="button"
+                                        onClick={() => setActiveTab('amenity')}
+                                        variant="secondary"
+                                        className="text-xs font-bold py-5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white"
+                                    >
+                                        Kembali
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        disabled={form.processing || !form.data.primary_image}
+                                        className="bg-gold hover:bg-white text-black font-bold text-xs px-8 py-5 rounded-xl flex gap-1.5 items-center active:scale-95 shadow-xl hover:scale-103"
+                                    >
+                                        <Save className="h-4 w-4" /> {form.processing ? 'Menyimpan...' : 'Simpan Homestay Premium'}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </form>
+        </div>
+    );
+}
