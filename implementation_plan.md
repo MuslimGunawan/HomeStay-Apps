@@ -338,3 +338,48 @@ Untuk menghasilkan platform yang lengkap dan bernilai tinggi, aplikasi ini akan 
 - Memastikan aset terkompilasi sukses dengan `npm run build`.
 - Menjalankan seluruh test suite Pest untuk menjamin tidak ada regresi fungsionalitas.
 - Melakukan verifikasi visual di browser dengan masuk menggunakan akun Super Admin (`admin@homestay.com` / `password`) dan memastikan menu Kelola Kamar, Reservasi, Stays, dan Aduan dapat diakses dan berjalan dengan sempurna secara global.
+
+---
+
+## Rencana Penyempurnaan Setup & Start Scripts, Transisi Data 'Kamar' (Bukan Rumah), dan Listing Status (Phase 10)
+
+### 1. Perbaikan PowerShell Scripts & Wrapper BAT
+- **`start.ps1`**: Menambahkan delay pembukaan browser menggunakan `Start-Job` dengan `Start-Sleep -Seconds 4` sebelum memicu `Start-Process "http://localhost:8000"`. Ini memastikan PHP dev server sudah online sebelum peramban terbuka.
+- **`start.bat` [NEW]**: Membuat script launcher batch untuk bypass kebijakan eksekusi PowerShell (`-ExecutionPolicy Bypass`), memungkinkan pengguna menjalankan `start.ps1` hanya dengan klik ganda (*double-click*) tanpa hambatan izin Windows.
+- **`setup.bat` [NEW]**: Membuat batch launcher serupa untuk `setup.ps1` agar proses instalasi awal berjalan mulus via klik ganda.
+
+### 2. Transisi Menyeluruh Menjadi 'Kamar' (Bukan Rumah/Properti)
+- Mengganti teks label, judul halaman, dan placeholder yang masih menggunakan istilah "Properti" atau "Rumah/Properti" menjadi "Kamar" atau "Kamar Homestay" untuk menyelaraskan dengan konteks sewa kamar:
+  - `welcome.tsx`: "Akses Properti" -> "Akses Kamar"
+  - `host/dashboard.tsx`: "{listingsCount} Properti" -> "{listingsCount} Kamar", "Jumlah kamar/properti terdaftar..." -> "Jumlah kamar terdaftar..."
+  - `host/homestays/create.tsx` & `edit.tsx`: "Info Utama Properti" -> "Info Utama Kamar", "Alamat Lengkap Properti" -> "Alamat Lengkap Kamar", "Deskripsi Properti" -> "Deskripsi Kamar"
+  - `host/homestays/index.tsx`: "Daftar Properti Anda" -> "Daftar Kamar Anda", "Edit Properti" -> "Edit Kamar"
+  - `explore.tsx`: "Fasilitas Properti" -> "Fasilitas Kamar", "Lokasi Properti" -> "Lokasi Kamar"
+  - `bookings/checkout.tsx`: "Nama Properti" -> "Nama/Tipe Kamar"
+  - `admin/dashboard.tsx`: "Properti homestay terdaftar" -> "Kamar homestay terdaftar"
+
+### 3. Implementasi Tiga Status Listing Kamar (Aktif, Tersewa, Tutup)
+- **Model `Homestay.php`**:
+  - Menambahkan attribute accessor dinamis `display_status` (dengan append array `$appends = ['display_status']`).
+  - Logika perhitungan `display_status`:
+    - Jika status di database adalah `inactive` atau `tutup` -> `tutup` (Closed/Ditangguhkan).
+    - Jika ada pemesanan terkonfirmasi (`status` = `confirmed` atau `completed` dan hari ini berada dalam rentang `check_in` s.d. `check_out`) -> `tersewa` (Occupied/Rented).
+    - Selain kondisi di atas -> `aktif` (Active/Available).
+  - Memperbarui `scopeActive` agar memfilter homestay yang berstatus `active` or `aktif` di database.
+- **Penyimpanan Status di Controller (`HostController.php`)**:
+  - Mengubah method `store` untuk memvalidasi dan menyimpan parameter `status` dari form.
+  - Memastikan method `update` mendeteksi parameter status baru dengan benar.
+- **Form Edit & Tambah Kamar (`create.tsx` & `edit.tsx`)**:
+  - Menambahkan dropdown input `Status` pada tab Info Utama Kamar dengan pilihan: "Aktif (Dapat Dipesan)" dan "Tutup (Ditangguhkan)".
+- **Daftar Kamar Pemilik (`host/homestays/index.tsx`)**:
+  - Menggunakan attribute `display_status` untuk menampilkan badge status yang sesuai:
+    - **Aktif**: Badge warna hijau zamrud.
+    - **Tersewa**: Badge warna oranye/kuning hangat.
+    - **Tutup**: Badge warna abu-abu/putih redup.
+
+## Rencana Verifikasi (Testing Plan - Phase 10)
+- Memverifikasi keberhasilan compile aset frontend dengan `npm run build`.
+- Menjalankan linter `npm run lint:check` dan PHP formatter `vendor/bin/pint --dirty --format agent`.
+- Menjalankan 42 Pest tests.
+- Melakukan verifikasi manual via browser subagent/browser manual untuk menguji perubahan status otomatis kamar menjadi "Tersewa" setelah pemesanan disetujui, dan kembali menjadi "Aktif" setelah masa menginap selesai.
+

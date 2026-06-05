@@ -107,7 +107,7 @@ export default function AdminDashboard({
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-extrabold font-outfit text-white">{totalListings} Kamar</div>
-                        <p className="text-[9px] text-muted-foreground mt-1">Properti homestay terdaftar.</p>
+                        <p className="text-[9px] text-muted-foreground mt-1">Kamar homestay terdaftar.</p>
                     </CardContent>
                 </Card>
 

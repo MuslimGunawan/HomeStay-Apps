@@ -11,8 +11,13 @@ if (-not (Test-Path .env)) {
 
 # Inform the user about the URL
 Write-Host "`nAplikasi akan berjalan di: http://localhost:8000" -ForegroundColor Green
-Write-Host "Membuka browser ke halaman beranda..." -ForegroundColor Cyan
-Start-Process "http://localhost:8000"
+Write-Host "Membuka browser ke halaman beranda secara otomatis..." -ForegroundColor Cyan
+
+# Start a background job to wait for server spin-up before opening browser
+Start-Job -ScriptBlock {
+    Start-Sleep -Seconds 4
+    Start-Process "http://localhost:8000"
+} | Out-Null
 
 Write-Host "Memulai Concurrently Server (PHP & Vite Dev Server)..." -ForegroundColor Yellow
 Write-Host "Tekan [Ctrl+C] untuk menghentikan server.`n" -ForegroundColor Yellow

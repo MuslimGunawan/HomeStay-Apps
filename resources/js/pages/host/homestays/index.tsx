@@ -60,10 +60,10 @@ return;
                         {auth?.user?.role === 'admin' ? 'Portal Administrator' : 'Portal Pemilik'}
                     </span>
                     <h1 className="font-outfit text-3xl font-extrabold tracking-tight">
-                        {auth?.user?.role === 'admin' ? 'Daftar Semua Kamar' : 'Daftar Properti Anda'}
+                        {auth?.user?.role === 'admin' ? 'Daftar Semua Kamar' : 'Daftar Kamar Anda'}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        {auth?.user?.role === 'admin' ? 'Kelola semua listing properti, edit detail, dan hapus penawaran kamar secara global.' : 'Kelola listing properti, edit detail, and hapus penawaran kamar.'}
+                        {auth?.user?.role === 'admin' ? 'Kelola semua listing kamar, edit detail, dan hapus penawaran kamar secara global.' : 'Kelola listing kamar, edit detail, dan hapus penawaran kamar.'}
                     </p>
                 </div>
                 <Button 
@@ -80,7 +80,7 @@ return;
                 <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 rounded-3xl border border-dashed border-white/10 bg-white/5">
                     <Hotel className="h-12 w-12 text-gold/40 animate-pulse" />
                     <h4 className="font-bold text-white">Belum Ada Listing</h4>
-                    <p className="text-xs text-muted-foreground max-w-sm">Anda belum menambahkan properti homestay di Lhokseumawe. Klik tombol di atas untuk mendaftarkan properti pertama Anda!</p>
+                    <p className="text-xs text-muted-foreground max-w-sm">Anda belum menambahkan kamar homestay di Lhokseumawe. Klik tombol di atas untuk mendaftarkan kamar pertama Anda!</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -98,11 +98,15 @@ return;
                                     <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent"></div>
                                     <div className="absolute top-4 right-4">
                                         <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                                            homestay.status === 'active' 
+                                            homestay.display_status === 'aktif' 
                                                 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                                                : homestay.display_status === 'tersewa'
+                                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                                                 : 'bg-white/10 text-white/50 border border-white/10'
                                         }`}>
-                                            {homestay.status === 'active' ? 'Aktif' : 'Non-Aktif'}
+                                            {homestay.display_status === 'aktif' && 'Aktif'}
+                                            {homestay.display_status === 'tersewa' && 'Tersewa'}
+                                            {homestay.display_status === 'tutup' && 'Tutup'}
                                         </span>
                                     </div>
                                 </div>
@@ -125,7 +129,7 @@ return;
                                         onClick={() => router.get(route(`${prefix}.homestays.edit` as any, { id: homestay.id }))}
                                         className="flex-1 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs font-bold py-2 rounded-xl flex items-center justify-center gap-1.5"
                                     >
-                                        <Edit className="h-4 w-4" /> Edit Properti
+                                        <Edit className="h-4 w-4" /> Edit Kamar
                                     </Button>
                                     <Button
                                         onClick={() => {

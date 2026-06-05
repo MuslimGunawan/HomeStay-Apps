@@ -335,7 +335,7 @@ return;
                         <div className="space-y-4">
                             <h3 className="font-outfit text-xl font-bold text-white flex items-center">
                                 <Home className="mr-2.5 h-5 w-5 text-gold" />
-                                Deskripsi Properti
+                                Deskripsi Kamar
                             </h3>
                             <p className="text-xs text-white/50 leading-relaxed font-sans whitespace-pre-line">
                                 {homestay.description || ''}

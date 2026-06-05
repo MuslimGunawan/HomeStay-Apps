@@ -309,7 +309,7 @@ params.guests = guests;
 
                         {/* Amenities checklist */}
                         <div className="space-y-3 text-left">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-white/40">Fasilitas Properti</label>
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-white/40">Fasilitas Kamar</label>
                             <div className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin">
                                 {allAmenities.map((amenity) => (
                                     <label key={amenity.id} className="flex items-center space-x-2.5 cursor-pointer">
@@ -452,7 +452,7 @@ params.guests = guests;
                         {/* Left side: Address and landmark timings */}
                         <div className="w-full lg:w-1/2 space-y-6 text-left">
                             <div className="space-y-2">
-                                <span className="text-xs font-bold uppercase tracking-wider text-gold font-outfit">Lokasi Properti</span>
+                                <span className="text-xs font-bold uppercase tracking-wider text-gold font-outfit">Lokasi Kamar</span>
                                 <h2 className="font-outfit text-3xl font-extrabold text-white md:text-4xl">Lokasi & Akses Yuri-HomeStay</h2>
                                 <p className="text-xs text-white/50 leading-relaxed">
                                     Terletak di lokasi yang sangat strategis di pusat kota Lhokseumawe, Yuri-HomeStay memberikan kemudahan akses maksimal menuju berbagai pusat bisnis, kuliner legendaris, dan lokasi wisata alam terpopuler di Aceh Utara.

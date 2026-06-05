@@ -228,7 +228,7 @@ return 'Homestay@[Nomor_WhatsApp]';
 
                             <div className="space-y-4">
                                 <div>
-                                    <span className="block text-[9px] text-white/30 uppercase">Nama Properti</span>
+                                    <span className="block text-[9px] text-white/30 uppercase">Nama/Tipe Kamar</span>
                                     <span className="text-sm font-bold text-white block mt-0.5">{homestay.name}</span>
                                 </div>
 

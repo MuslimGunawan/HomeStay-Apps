@@ -412,7 +412,7 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
                     {/* Left side: Address and landmark timings */}
                     <div className="w-full lg:w-1/2 space-y-6 text-left">
                         <div className="space-y-2">
-                            <span className="text-xs font-bold uppercase tracking-wider text-gold font-outfit">Akses Properti</span>
+                            <span className="text-xs font-bold uppercase tracking-wider text-gold font-outfit">Akses Kamar</span>
                             <h2 className="font-outfit text-3xl font-extrabold text-white md:text-4xl">Lokasi & Akses Yuri-HomeStay</h2>
                             <p className="text-xs text-white/50 leading-relaxed">
                                 Terletak di lokasi yang sangat strategis di pusat kota Lhokseumawe, Yuri-HomeStay memberikan kemudahan akses maksimal menuju berbagai pusat bisnis, kuliner legendaris, dan lokasi wisata alam terpopuler di Aceh Utara.

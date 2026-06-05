@@ -136,8 +136,8 @@ return;
                         <Hotel className="h-4 w-4 text-blue-400" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-extrabold font-outfit text-white">{listingsCount} Properti</div>
-                        <p className="text-[10px] text-muted-foreground mt-1">Jumlah kamar/properti terdaftar milik Anda.</p>
+                        <div className="text-3xl font-extrabold font-outfit text-white">{listingsCount} Kamar</div>
+                        <p className="text-[10px] text-muted-foreground mt-1">Jumlah kamar terdaftar milik Anda.</p>
                     </CardContent>
                 </Card>
 
@@ -258,7 +258,7 @@ return;
                         <div className="flex flex-col items-center justify-center py-12 text-center rounded-2xl border border-dashed border-white/10 bg-white/5 space-y-3">
                             <Users className="h-8 w-8 text-muted-foreground" />
                             <h4 className="text-xs font-bold text-white">Kosong Hari Ini</h4>
-                            <p className="text-[10px] text-muted-foreground max-w-xs font-sans">Reservasi terkonfirmasi yang menginap hari ini di properti Lhokseumawe Anda akan muncul di sini.</p>
+                            <p className="text-[10px] text-muted-foreground max-w-xs font-sans">Reservasi terkonfirmasi yang menginap hari ini di kamar Lhokseumawe Anda akan muncul di sini.</p>
                         </div>
                     ) : (
                         <div className="space-y-4">

@@ -57,6 +57,7 @@ export default function Create({ amenities = [], categories = [] }: CreateProps)
         amenities: [] as number[],
         custom_amenities: [] as string[],
         primary_image: null as File | null,
+        status: 'active',
         
         // Dynamic arrays mapped for standard multipart upload validation
         other_media: [] as File[],
@@ -196,7 +197,7 @@ export default function Create({ amenities = [], categories = [] }: CreateProps)
                             : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:border-white/30'
                     }`}
                 >
-                    1. Info Utama Properti
+                    1. Info Utama Kamar
                 </button>
                 <button
                     onClick={() => setActiveTab('amenity')}
@@ -294,7 +295,7 @@ export default function Create({ amenities = [], categories = [] }: CreateProps)
                                     </div>
 
                                     <div className="space-y-1.5 text-left">
-                                        <Label htmlFor="address" className="text-xs text-white/60">Alamat Lengkap Properti</Label>
+                                        <Label htmlFor="address" className="text-xs text-white/60">Alamat Lengkap Kamar</Label>
                                         <Input 
                                             id="address"
                                             placeholder="Cth: Jl. Merdeka No. 12, Banda Sakti"
@@ -356,8 +357,24 @@ export default function Create({ amenities = [], categories = [] }: CreateProps)
                                     </div>
                                 </div>
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-1.5 text-left">
+                                        <Label htmlFor="status" className="text-xs text-white/60">Status Listing Kamar</Label>
+                                        <select
+                                            id="status"
+                                            value={form.data.status}
+                                            onChange={(e) => form.setData('status', e.target.value)}
+                                            className="w-full bg-black/40 border border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold focus:outline-none"
+                                        >
+                                            <option value="active" className="bg-[#0f0f0f] text-white">Aktif (Dapat Dipesan)</option>
+                                            <option value="inactive" className="bg-[#0f0f0f] text-white">Tutup (Ditangguhkan)</option>
+                                        </select>
+                                        {form.errors.status && <span className="text-[10px] text-rose-400">{form.errors.status}</span>}
+                                    </div>
+                                </div>
+
                                 <div className="space-y-1.5 text-left">
-                                    <Label htmlFor="desc" className="text-xs text-white/60">Deskripsi Kamar & Kelebihan Properti</Label>
+                                    <Label htmlFor="desc" className="text-xs text-white/60">Deskripsi Kamar & Kelebihan Layanan</Label>
                                     <textarea
                                         id="desc"
                                         rows={6}

@@ -17,6 +17,8 @@ class Homestay extends Model
     /** @use HasFactory<HomestayFactory> */
     use HasFactory;
 
+    protected $appends = ['display_status', 'average_rating'];
+
     /**
      * @return array<string, string>
      */
@@ -36,7 +38,7 @@ class Homestay extends Model
      */
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('status', 'active');
+        return $query->whereIn('status', ['active', 'aktif']);
     }
 
     /**
@@ -101,5 +103,26 @@ class Homestay extends Model
     public function getAverageRatingAttribute(): float
     {
         return (float) ($this->reviews()->avg('rating') ?? 0);
+    }
+
+    /**
+     * Get the dynamic display status of the room (aktif, tersewa, tutup).
+     */
+    public function getDisplayStatusAttribute(): string
+    {
+        if ($this->status === 'inactive' || $this->status === 'tutup') {
+            return 'tutup';
+        }
+
+        $today = now()->format('Y-m-d');
+
+        // A room is considered 'tersewa' if it has a confirmed booking for today
+        $isOccupied = $this->bookings()
+            ->whereIn('status', ['confirmed', 'completed'])
+            ->where('check_in', '<=', $today)
+            ->where('check_out', '>=', $today)
+            ->exists();
+
+        return $isOccupied ? 'tersewa' : 'aktif';
     }
 }

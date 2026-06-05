@@ -129,6 +129,7 @@ class HostController extends Controller
             'max_guests' => 'required|integer|min:1',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'status' => 'required|string|in:active,inactive',
             'amenities' => 'array',
             'primary_image' => 'required|image|max:15360', // 15MB
             'other_media.*' => 'nullable|file|max:102400', // 100MB for video/image
@@ -155,7 +156,7 @@ class HostController extends Controller
                 'max_guests' => $request->max_guests,
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,
-                'status' => 'active',
+                'status' => $request->status,
                 'category' => $request->category,
             ]);
 
