@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { 
     ClipboardList, 
@@ -10,10 +9,11 @@ import {
     MessageSquare,
     AlertCircle
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface SupportTicket {
     id: number;
@@ -36,7 +36,10 @@ export default function SupportTickets({ tickets = [] }: SupportProps) {
     const [actionProcessing, setActionProcessing] = useState(false);
 
     const handleResolve = () => {
-        if (!selectedTicket) return;
+        if (!selectedTicket) {
+return;
+}
+
         setActionProcessing(true);
         router.post(route('admin.support.resolve', { id: selectedTicket.id }), {}, {
             onSuccess: () => {

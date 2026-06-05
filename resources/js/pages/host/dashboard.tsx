@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { 
     LayoutGrid, 
@@ -15,10 +14,11 @@ import {
     MessageSquare,
     AlertCircle
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Booking {
     id: number;
@@ -62,11 +62,15 @@ export default function HostDashboard({ listingsCount, earnings, pendingApproval
         const text = encodeURIComponent(
             `Halo Kak ${guestName}, saya Host dari penginapan ${homestayName}. Terkait pemesanan Anda...`
         );
+
         return `https://wa.me/${cleanedPhone}?text=${text}`;
     };
 
     const handleApprove = () => {
-        if (!selectedBooking) return;
+        if (!selectedBooking) {
+return;
+}
+
         setActionProcessing(true);
         router.post(route('host.reservations.approve', { id: selectedBooking.id }), {}, {
             onSuccess: () => {
@@ -82,7 +86,10 @@ export default function HostDashboard({ listingsCount, earnings, pendingApproval
     };
 
     const handleReject = () => {
-        if (!selectedBooking) return;
+        if (!selectedBooking) {
+return;
+}
+
         setActionProcessing(true);
         router.post(route('host.reservations.reject', { id: selectedBooking.id }), {}, {
             onSuccess: () => {

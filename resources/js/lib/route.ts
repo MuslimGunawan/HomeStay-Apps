@@ -67,8 +67,10 @@ const routesMap: Record<string, string> = {
 
 export function route(name: string, params?: Record<string, any> | any): string {
     const pattern = routesMap[name];
+
     if (!pattern) {
         console.warn(`Route "${name}" not found in routesMap.`);
+
         return name;
     }
     
@@ -81,9 +83,11 @@ export function route(name: string, params?: Record<string, any> | any): string 
     // If params is a primitive (like a number or string), and there is exactly one placeholder, replace it.
     if (typeof params !== 'object') {
         const placeholders = pattern.match(/\{[^}]+\}/g);
+
         if (placeholders && placeholders.length === 1) {
             return url.replace(placeholders[0], String(params));
         }
+
         return url;
     }
     
@@ -92,6 +96,7 @@ export function route(name: string, params?: Record<string, any> | any): string 
     
     Object.entries(params).forEach(([key, value]) => {
         const placeholder = `{${key}}`;
+
         if (url.includes(placeholder)) {
             url = url.replace(placeholder, String(value));
             usedKeys.add(key);

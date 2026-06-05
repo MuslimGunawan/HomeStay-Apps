@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { 
     CalendarCheck, 
@@ -13,11 +12,12 @@ import {
     XCircle,
     Search
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
 
 interface Booking {
     id: number;
@@ -61,11 +61,15 @@ export default function Reservations({ bookings = [] }: ReservationsProps) {
         const text = encodeURIComponent(
             `Halo Kak ${guestName}, saya Host dari penginapan ${homestayName}. Terkait pemesanan Anda...`
         );
+
         return `https://wa.me/${cleanedPhone}?text=${text}`;
     };
 
     const handleApprove = () => {
-        if (!selectedBooking) return;
+        if (!selectedBooking) {
+return;
+}
+
         setActionProcessing(true);
         router.post(route(`${prefix}.reservations.approve` as any, { id: selectedBooking.id }), {}, {
             onSuccess: () => {
@@ -81,7 +85,10 @@ export default function Reservations({ bookings = [] }: ReservationsProps) {
     };
 
     const handleReject = () => {
-        if (!selectedBooking) return;
+        if (!selectedBooking) {
+return;
+}
+
         setActionProcessing(true);
         router.post(route(`${prefix}.reservations.reject` as any, { id: selectedBooking.id }), {}, {
             onSuccess: () => {

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import { 
     Settings, 
@@ -9,11 +8,12 @@ import {
     HelpCircle,
     Building
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
 
 interface SettingsData {
     homestay_name: string;

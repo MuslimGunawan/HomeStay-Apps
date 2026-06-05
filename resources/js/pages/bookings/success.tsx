@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import LuxuryLayout from '@/layouts/LuxuryLayout';
 import { Clipboard, Check, Eye, EyeOff, UploadCloud, FileText, CheckCircle, CreditCard, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import LuxuryLayout from '@/layouts/LuxuryLayout';
 
 interface Booking {
     id: number;
@@ -53,8 +53,10 @@ export default function Success({ booking, tempPassword, newUser }: SuccessProps
 
     const handleUploadSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         if (!data.payment_receipt) {
             toast.error('Silakan pilih berkas bukti pembayaran terlebih dahulu.');
+
             return;
         }
 

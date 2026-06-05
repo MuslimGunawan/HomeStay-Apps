@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
-import LuxuryLayout from '@/layouts/LuxuryLayout';
 import { Calendar, Users, ShieldCheck, CreditCard, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
+import LuxuryLayout from '@/layouts/LuxuryLayout';
 
 interface PaymentMethod {
     id: number;
@@ -61,7 +61,10 @@ export default function Checkout({ homestay, paymentMethods = [], checkIn, check
 
     // Calculate temporary password dynamically for premium preview in UI
     const getTempPasswordPreview = () => {
-        if (!data.phone) return 'Homestay@[Nomor_WhatsApp]';
+        if (!data.phone) {
+return 'Homestay@[Nomor_WhatsApp]';
+}
+
         return `Homestay@${data.phone}`;
     };
 

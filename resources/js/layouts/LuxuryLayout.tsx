@@ -1,10 +1,11 @@
-import { ReactNode, useEffect, useState } from 'react';
-import PillNavbar from '@/components/PillNavbar';
-import CustomCursor from '@/components/CustomCursor';
-import Preloader from '@/components/Preloader';
-import { ArrowUp, Instagram, Github, PhoneCall, Mail, MapPin } from 'lucide-react';
-import { Toaster } from 'sonner';
 import { usePage } from '@inertiajs/react';
+import { ArrowUp, Instagram, Github, PhoneCall, Mail, MapPin } from 'lucide-react';
+import type { ReactNode} from 'react';
+import { useEffect, useState } from 'react';
+import { Toaster } from 'sonner';
+import CustomCursor from '@/components/CustomCursor';
+import PillNavbar from '@/components/PillNavbar';
+import Preloader from '@/components/Preloader';
 
 interface LuxuryLayoutProps {
     children: ReactNode;
@@ -12,6 +13,7 @@ interface LuxuryLayoutProps {
 
 export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const { name } = usePage().props as any;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -25,6 +27,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
         // Anti-theft Copy Watermark Listener
         const handleCopy = (e: ClipboardEvent) => {
             const selection = document.getSelection();
+
             if (selection && selection.toString().length > 30) {
                 const watermarkText = `\n\n[Salinan Resmi HomeStay-Apps. Baca selengkapnya di: ${window.location.href}]`;
                 e.clipboardData?.setData('text/plain', selection.toString() + watermarkText);
@@ -72,16 +75,18 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                         <div className="space-y-4">
                             <span className="font-outfit text-2xl font-extrabold tracking-widest text-white">
                                 {(() => {
-                                    const { name } = usePage().props as any;
                                     const siteName = (name || 'Yuri-HomeStay').toUpperCase();
+
                                     if (siteName.includes('-')) {
                                         const idx = siteName.indexOf('-');
+
                                         return (
                                             <>
                                                 {siteName.substring(0, idx)}<span className="text-gold">{siteName.substring(idx)}</span>
                                             </>
                                         );
                                     }
+
                                     if (siteName.endsWith('HOMESTAY')) {
                                         return (
                                             <>
@@ -89,6 +94,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                                             </>
                                         );
                                     }
+
                                     return (
                                         <>
                                             {siteName}<span className="text-gold">.</span>
@@ -144,10 +150,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
 
                     {/* Bottom strip */}
                     <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-white/40 text-[11px]">
-                        <p>© {new Date().getFullYear()} {(() => {
-                            const { name } = usePage().props as any;
-                            return name || 'Yuri-HomeStay';
-                        })()} (UAS PABW Lanjut). All Rights Reserved.</p>
+                        <p>© {new Date().getFullYear()} {name || 'Yuri-HomeStay'} (UAS PABW Lanjut). All Rights Reserved.</p>
                         
                         <div className="flex space-x-4">
                             <a href="#" className="hover:text-gold transition-colors"><Instagram className="h-4 w-4" /></a>

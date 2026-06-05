@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import { 
     Save, 
@@ -12,11 +11,12 @@ import {
     Plus,
     Trash2
 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
 
 interface Media {
     id: number;
@@ -91,6 +91,7 @@ export default function Edit({ homestay, amenities = [], categories = [] }: Edit
 
     const handleAmenityToggle = (id: number) => {
         const checked = form.data.amenities.includes(id);
+
         if (checked) {
             form.setData('amenities', form.data.amenities.filter(item => item !== id));
         } else {
@@ -220,6 +221,7 @@ export default function Edit({ homestay, amenities = [], categories = [] }: Edit
                                             value={isCustomCategory ? '__custom__' : form.data.category}
                                             onChange={(e) => {
                                                 const val = e.target.value;
+
                                                 if (val === '__custom__') {
                                                     setIsCustomCategory(true);
                                                     form.setData('category', '');

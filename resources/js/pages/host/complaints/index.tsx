@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { AlertTriangle, Check, PhoneCall, Calendar, Clock, Sparkles } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Complaint {
     id: number;
@@ -40,11 +40,15 @@ export default function Complaints({ complaints = [] }: ComplaintsProps) {
         const text = encodeURIComponent(
             `Halo Kak ${guestName}, saya Host dari penginapan ${homestayName}. Saya menerima aduan Anda mengenai: "${complaintMsg}". Kami siap membantu mengatasi kendala ini...`
         );
+
         return `https://wa.me/${cleanedPhone}?text=${text}`;
     };
 
     const handleResolve = () => {
-        if (!selectedComplaint) return;
+        if (!selectedComplaint) {
+return;
+}
+
         setResolveProcessing(true);
         router.post(route(`${prefix}.complaints.resolve` as any, { id: selectedComplaint.id }), {}, {
             onSuccess: () => {

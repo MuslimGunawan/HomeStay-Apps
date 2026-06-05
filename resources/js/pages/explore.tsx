@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import LuxuryLayout from '@/layouts/LuxuryLayout';
 import { Filter, MapPin, Star, ArrowRight, X, Sparkles, ChevronDown, Hotel } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import LuxuryLayout from '@/layouts/LuxuryLayout';
 
 interface Amenity {
     id: number;
@@ -66,17 +66,21 @@ export default function Explore({ results = [], filters = {}, allAmenities = [],
             if (desktopGuestsDropdownRef.current && !desktopGuestsDropdownRef.current.contains(event.target as Node)) {
                 setDesktopGuestsDropdownOpen(false);
             }
+
             if (mobileGuestsDropdownRef.current && !mobileGuestsDropdownRef.current.contains(event.target as Node)) {
                 setMobileGuestsDropdownOpen(false);
             }
+
             if (desktopRoomDropdownRef.current && !desktopRoomDropdownRef.current.contains(event.target as Node)) {
                 setDesktopRoomDropdownOpen(false);
             }
+
             if (mobileRoomDropdownRef.current && !mobileRoomDropdownRef.current.contains(event.target as Node)) {
                 setMobileRoomDropdownOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
@@ -92,10 +96,23 @@ export default function Explore({ results = [], filters = {}, allAmenities = [],
 
     const applyFilters = () => {
         const params: any = {};
-        if (city) params.city = city;
-        if (priceMin) params.price_min = priceMin;
-        if (priceMax) params.price_max = priceMax;
-        if (guests) params.guests = guests;
+
+        if (city) {
+params.city = city;
+}
+
+        if (priceMin) {
+params.price_min = priceMin;
+}
+
+        if (priceMax) {
+params.price_max = priceMax;
+}
+
+        if (guests) {
+params.guests = guests;
+}
+
         if (selectedAmenities.length > 0) {
             params.amenities = selectedAmenities.join(',');
         }
@@ -352,6 +369,7 @@ export default function Explore({ results = [], filters = {}, allAmenities = [],
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {results.map((homestay, idx) => {
                                     const primaryImg = homestay.media.find(m => m.is_primary) || homestay.media[0];
+
                                     return (
                                         <motion.div
                                             initial={{ opacity: 0, y: 50 }}

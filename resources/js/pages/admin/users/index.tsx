@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import { 
     Users, 
@@ -14,12 +13,13 @@ import {
     X,
     Lock
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { toast } from 'sonner';
 
 interface Permission {
     id: number;
@@ -82,7 +82,11 @@ export default function UsersIndex({ users = [], allPermissions = [] }: UsersPro
 
     const handleEditUser = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedUser) return;
+
+        if (!selectedUser) {
+return;
+}
+
         editForm.post(route('admin.users.update', { id: selectedUser.id }), {
             onSuccess: () => {
                 toast.success('Data pengguna berhasil diperbarui.');
@@ -95,7 +99,10 @@ export default function UsersIndex({ users = [], allPermissions = [] }: UsersPro
     };
 
     const handleDeleteUser = () => {
-        if (!selectedUser) return;
+        if (!selectedUser) {
+return;
+}
+
         router.post(route('admin.users.delete', { id: selectedUser.id }), {}, {
             onSuccess: () => {
                 toast.success('Akun pengguna berhasil dihapus permanen.');
@@ -108,7 +115,10 @@ export default function UsersIndex({ users = [], allPermissions = [] }: UsersPro
     };
 
     const handleTogglePermission = (permissionId: number) => {
-        if (!selectedUser) return;
+        if (!selectedUser) {
+return;
+}
+
         router.post(route('admin.users.toggle-permission', { id: selectedUser.id }), {
             permission_id: permissionId,
         }, {
@@ -116,7 +126,10 @@ export default function UsersIndex({ users = [], allPermissions = [] }: UsersPro
                 toast.success('Hak akses host berhasil disesuaikan.');
                 // Refresh our local user state reference to keep permissions checked accurately
                 const updated = users.find(u => u.id === selectedUser.id);
-                if (updated) setSelectedUser(updated);
+
+                if (updated) {
+setSelectedUser(updated);
+}
             }
         });
     };
@@ -465,6 +478,7 @@ export default function UsersIndex({ users = [], allPermissions = [] }: UsersPro
                         <div className="space-y-3">
                             {allPermissions.map((permission) => {
                                 const hasPermission = selectedUser?.permissions.some(p => p.id === permission.id);
+
                                 return (
                                     <label key={permission.id} className="flex items-start space-x-3 p-3 bg-black/40 border border-white/5 rounded-xl cursor-pointer hover:bg-black/60 transition-colors">
                                         <input

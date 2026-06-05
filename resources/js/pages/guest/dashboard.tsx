@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import { 
     Calendar, 
@@ -15,12 +14,13 @@ import {
     Image,
     Upload
 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { toast } from 'sonner';
 
 interface Booking {
     id: number;
@@ -75,7 +75,10 @@ export default function GuestDashboard({ bookings = [], needsPasswordChange }: G
 
     const handleUploadReceipt = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedBooking) return;
+
+        if (!selectedBooking) {
+return;
+}
         
         receiptForm.post(route('bookings.receipt', { id: selectedBooking.id }), {
             onSuccess: () => {
@@ -91,7 +94,10 @@ export default function GuestDashboard({ bookings = [], needsPasswordChange }: G
 
     const handleSubmitReview = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedBooking) return;
+
+        if (!selectedBooking) {
+return;
+}
 
         reviewForm.post(route('guest.review.submit', { bookingId: selectedBooking.id }), {
             onSuccess: () => {
@@ -107,7 +113,10 @@ export default function GuestDashboard({ bookings = [], needsPasswordChange }: G
 
     const handleSubmitComplaint = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedBooking) return;
+
+        if (!selectedBooking) {
+return;
+}
 
         complaintForm.post(route('guest.complaint.submit', { bookingId: selectedBooking.id }), {
             onSuccess: () => {
@@ -219,6 +228,7 @@ export default function GuestDashboard({ bookings = [], needsPasswordChange }: G
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {bookings.map((booking) => {
                             const primaryImg = booking.homestay.media.find(m => m.is_primary) || booking.homestay.media[0];
+
                             return (
                                 <Card key={booking.id} className="overflow-hidden border border-white/5 bg-[#0f0f0f] flex flex-col text-left">
                                     <div className="relative aspect-video w-full overflow-hidden bg-white/5 shrink-0">

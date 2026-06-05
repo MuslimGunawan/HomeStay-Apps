@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import LuxuryLayout from '@/layouts/LuxuryLayout';
 import { Search, MapPin, Calendar, Users, Star, ArrowRight, Compass, Shield, Sparkles, HelpCircle, ChevronDown, Hotel } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import LuxuryLayout from '@/layouts/LuxuryLayout';
 
 interface Media {
     id: number;
@@ -69,11 +69,13 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
             if (guestDropdownRef.current && !guestDropdownRef.current.contains(event.target as Node)) {
                 setDropdownOpen(false);
             }
+
             if (roomDropdownRef.current && !roomDropdownRef.current.contains(event.target as Node)) {
                 setRoomDropdownOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
@@ -160,6 +162,7 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
                             "Istirahat terbaik adalah saat Anda dikelilingi oleh ketenangan kamar yang nyaman dan bersih."
                         ];
                         const dailyQuote = DAILY_QUOTES[new Date().getDate() % DAILY_QUOTES.length];
+
                         return (
                             <div className="mx-auto max-w-lg bg-white/5 border border-white/10 px-6 py-3.5 rounded-2xl backdrop-blur-sm animate-in fade-in duration-700">
                                 <span className="block text-[8px] font-bold text-gold/60 uppercase tracking-widest mb-1">Sambutan Hari Ini</span>
@@ -324,6 +327,7 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {featuredHomestays.map((homestay, idx) => {
                         const primaryMedia = homestay.media.find(m => m.is_primary) || homestay.media[0];
+
                         return (
                             <motion.div
                                 initial={{ opacity: 0, y: 50 }}

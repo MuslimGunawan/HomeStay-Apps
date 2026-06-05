@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import { Users, PhoneCall, Calendar, ShieldCheck, MapPin, Search } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 interface Booking {
@@ -36,11 +36,13 @@ export default function ActiveStays({ stays = [] }: StaysProps) {
         const text = encodeURIComponent(
             `Halo Kak ${guestName}, saya Host dari penginapan ${homestayName}. Saya ingin memastikan kenyamanan stay Anda...`
         );
+
         return `https://wa.me/${cleanedPhone}?text=${text}`;
     };
 
     const isCurrentlyInStay = (checkIn: string, checkOut: string) => {
         const today = new Date().toISOString().split('T')[0];
+
         return today >= checkIn && today <= checkOut;
     };
 
@@ -86,6 +88,7 @@ export default function ActiveStays({ stays = [] }: StaysProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {filteredStays.map((stay) => {
                         const active = isCurrentlyInStay(stay.check_in, stay.check_out) && stay.status === 'confirmed';
+
                         return (
                             <Card key={stay.id} className="border border-white/5 bg-[#0f0f0f] p-6 text-left relative overflow-hidden flex flex-col justify-between">
                                 {active && (

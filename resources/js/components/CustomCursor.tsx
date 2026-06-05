@@ -53,6 +53,7 @@ export default function CustomCursor() {
                 const dx = position.x - prev.x;
                 const dy = position.y - prev.y;
                 const ease = 0.15; // smoothness factor
+
                 return {
                     x: prev.x + dx * ease,
                     y: prev.y + dy * ease,
@@ -62,10 +63,13 @@ export default function CustomCursor() {
         };
 
         frameId = requestAnimationFrame(updateRing);
+
         return () => cancelAnimationFrame(frameId);
     }, [position]);
 
-    if (!isVisible) return null;
+    if (!isVisible) {
+return null;
+}
 
     return (
         <div className={`pointer-events-none fixed inset-0 z-[99999] hidden lg:block ${isHovered ? 'cursor-active' : ''}`}>

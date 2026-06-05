@@ -19,7 +19,9 @@ export default function Preloader() {
         };
     }, []);
 
-    if (hidden) return null;
+    if (hidden) {
+return null;
+}
 
     return (
         <div

@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
-import LuxuryLayout from '@/layouts/LuxuryLayout';
 import { Mail, HelpCircle, ChevronDown, Send, MessageCircle } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import LuxuryLayout from '@/layouts/LuxuryLayout';
 
 interface FAQ {
     question: string;

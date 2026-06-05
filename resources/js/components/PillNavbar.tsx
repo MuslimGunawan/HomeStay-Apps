@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
 import { Home, Compass, Info, ArrowUpRight, User, LogOut } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function PillNavbar() {
     const { auth, name } = usePage().props as any;
@@ -11,14 +11,17 @@ export default function PillNavbar() {
 
     const formatBrandName = (str: string) => {
         const upper = str.toUpperCase();
+
         if (upper.includes('-')) {
             const idx = upper.indexOf('-');
+
             return (
                 <>
                     {upper.substring(0, idx)}<span className="text-gold">{upper.substring(idx)}</span>
                 </>
             );
         }
+
         if (upper.endsWith('HOMESTAY')) {
             return (
                 <>
@@ -26,6 +29,7 @@ export default function PillNavbar() {
                 </>
             );
         }
+
         return (
             <>
                 {upper}<span className="text-gold">.</span>
@@ -54,6 +58,7 @@ export default function PillNavbar() {
         };
 
         window.addEventListener('scroll', handleScroll);
+
         return () => window.removeEventListener('scroll', handleScroll);
     }, [lastScrollY]);
 

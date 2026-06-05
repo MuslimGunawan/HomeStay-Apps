@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import LuxuryLayout from '@/layouts/LuxuryLayout';
 import { MapPin, Star, Users, Home, Calendar, Wifi, AirVent, Compass, Sparkles, Shield, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download, Share2, X, AlertCircle, ChevronDown, Video as VideoIcon } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
@@ -11,6 +10,8 @@ import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 import Video from "yet-another-react-lightbox/plugins/video";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
+
+import LuxuryLayout from '@/layouts/LuxuryLayout';
 
 interface Media {
     id: number;
@@ -84,15 +85,25 @@ export default function Show({ homestay, bookedDates = [] }: ShowProps) {
     const categories = ['all', 'exterior', 'interior'];
     allMedia.forEach(m => {
         const cat = m.custom_category || m.category;
+
         if (cat && !categories.includes(cat)) {
             categories.push(cat);
         }
     });
 
     const filteredMedia = allMedia.filter(m => {
-        if (activeTab === 'all') return true;
-        if (activeTab === 'exterior') return m.source === 'exterior';
-        if (activeTab === 'interior') return m.source === 'interior';
+        if (activeTab === 'all') {
+return true;
+}
+
+        if (activeTab === 'exterior') {
+return m.source === 'exterior';
+}
+
+        if (activeTab === 'interior') {
+return m.source === 'interior';
+}
+
         return m.category === activeTab || m.custom_category === activeTab;
     });
 
@@ -120,6 +131,7 @@ export default function Show({ homestay, bookedDates = [] }: ShowProps) {
                 ],
             };
         }
+
         return { src: m.file_path };
     });
 
@@ -134,6 +146,7 @@ export default function Show({ homestay, bookedDates = [] }: ShowProps) {
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
@@ -160,24 +173,29 @@ export default function Show({ homestay, bookedDates = [] }: ShowProps) {
             if (inDate >= outDate) {
                 setBookingError('Tanggal Check-out harus setelah tanggal Check-in.');
                 setPriceCalculations(null);
+
                 return;
             }
 
             // Check blocked dates
             let hasOverlap = false;
-            let current = new Date(inDate);
+            const current = new Date(inDate);
+
             while (current <= outDate) {
                 const dateStr = current.toISOString().split('T')[0];
+
                 if (bookedDates.includes(dateStr)) {
                     hasOverlap = true;
                     break;
                 }
+
                 current.setDate(current.getDate() + 1);
             }
 
             if (hasOverlap) {
                 setBookingError('Maaf, salah satu tanggal dalam rentang pilihan Anda sudah dipesan.');
                 setPriceCalculations(null);
+
                 return;
             }
 
@@ -193,9 +211,13 @@ export default function Show({ homestay, bookedDates = [] }: ShowProps) {
     const proceedToCheckout = () => {
         if (!bookingDetails.check_in || !bookingDetails.check_out) {
             setBookingError('Silakan lengkapi tanggal Check-in dan Check-out Anda.');
+
             return;
         }
-        if (bookingError) return;
+
+        if (bookingError) {
+return;
+}
 
         router.get(`/homestays/${homestay.slug}/checkout`, bookingDetails);
     };
@@ -206,6 +228,7 @@ export default function Show({ homestay, bookedDates = [] }: ShowProps) {
         const text = encodeURIComponent(
             `Halo Kak ${homestay.host?.name || 'Host'}, saya tertarik dengan Homestay "${homestay.name}" di ${homestay.city}. Ingin bertanya ketersediaan kamar...`
         );
+
         return `https://wa.me/${phone}?text=${text}`;
     };
 
@@ -391,6 +414,7 @@ export default function Show({ homestay, bookedDates = [] }: ShowProps) {
                                             <div className="max-h-48 overflow-y-auto pr-0.5 scrollbar-thin">
                                                 {Array.from({ length: homestay.max_guests || 1 }).map((_, idx) => {
                                                     const num = idx + 1;
+
                                                     return (
                                                         <button
                                                             key={num}

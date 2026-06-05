@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { Heart, MapPin, ArrowRight, Compass, Star } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { toast } from 'sonner';
 
 interface Media {
     id: number;
@@ -86,6 +86,7 @@ export default function Wishlist({ wishlist = [] }: WishlistProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {wishlist.map((homestay) => {
                         const primaryImg = homestay.media.find(m => m.is_primary) || homestay.media[0];
+
                         return (
                             <div
                                 key={homestay.id}

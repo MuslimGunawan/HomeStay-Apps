@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import { 
     Sparkles, 
@@ -9,12 +8,13 @@ import {
     Search,
     AlertTriangle
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { toast } from 'sonner';
 
 interface Amenity {
     id: number;
@@ -64,7 +64,11 @@ export default function AmenitiesIndex({ amenities = [] }: AmenitiesProps) {
 
     const handleEditAmenity = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedAmenity) return;
+
+        if (!selectedAmenity) {
+return;
+}
+
         editForm.post(route('admin.amenities.update', { id: selectedAmenity.id }), {
             onSuccess: () => {
                 toast.success('Fasilitas global berhasil diperbarui.');
@@ -77,7 +81,10 @@ export default function AmenitiesIndex({ amenities = [] }: AmenitiesProps) {
     };
 
     const handleDeleteAmenity = () => {
-        if (!selectedAmenity) return;
+        if (!selectedAmenity) {
+return;
+}
+
         router.post(route('admin.amenities.delete', { id: selectedAmenity.id }), {}, {
             onSuccess: () => {
                 toast.success('Fasilitas global berhasil dihapus.');

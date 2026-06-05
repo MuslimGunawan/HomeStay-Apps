@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Hotel, Plus, Edit, Trash2, MapPin, Star, AlertTriangle, Users } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Homestay {
     id: number;
@@ -31,7 +31,10 @@ export default function Homestays({ homestays = [] }: HomestaysProps) {
     const [deleteProcessing, setDeleteProcessing] = useState(false);
 
     const handleDelete = () => {
-        if (!selectedHomestay) return;
+        if (!selectedHomestay) {
+return;
+}
+
         setDeleteProcessing(true);
         router.post(route(`${prefix}.homestays.delete` as any, { id: selectedHomestay.id }), {}, {
             onSuccess: () => {
@@ -83,6 +86,7 @@ export default function Homestays({ homestays = [] }: HomestaysProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {homestays.map((homestay) => {
                         const primaryImg = homestay.media.find(m => m.is_primary) || homestay.media[0];
+
                         return (
                             <Card key={homestay.id} className="overflow-hidden border border-white/5 bg-[#0f0f0f] flex flex-col h-full text-left">
                                 <div className="relative aspect-video w-full overflow-hidden bg-white/5 shrink-0">
