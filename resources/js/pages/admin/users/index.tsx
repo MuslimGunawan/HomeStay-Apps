@@ -34,6 +34,9 @@ interface User {
     phone?: string;
     role: string;
     permissions: Permission[];
+    bookings_count?: number;
+    homestays_count?: number;
+    created_at: string;
 }
 
 interface UsersProps {
@@ -152,6 +155,16 @@ setSelectedUser(updated);
         u.role.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '-';
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return dateString;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
     return (
         <div className="flex-1 space-y-8 p-8 max-w-6xl mx-auto text-left">
             <Head title="Kelola Pengguna" />
@@ -190,15 +203,17 @@ setSelectedUser(updated);
                         <tr>
                             <th scope="col" className="px-6 py-4">Nama Pengguna</th>
                             <th scope="col" className="px-6 py-4">Kontak / Email</th>
+                            <th scope="col" className="px-6 py-4">Statistik Aktivitas</th>
                             <th scope="col" className="px-6 py-4">Peran (Role)</th>
-                            <th scope="col" className="px-6 py-4 text-center">Aksi Kontrol</th>
+                            <th scope="col" className="px-6 py-4 text-right">Aksi Kontrol</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
                         {filteredUsers.map((user) => (
                             <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                                <td className="px-6 py-4 font-bold text-white">
-                                    {user.name}
+                                <td className="px-6 py-4">
+                                    <span className="font-bold text-white block">{user.name}</span>
+                                    <span className="text-[10px] text-muted-foreground mt-0.5">Gabung: {formatDate(user.created_at)}</span>
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className="block flex items-center gap-1.5"><Mail className="h-3.5 w-3.5 text-muted-foreground" /> {user.email}</span>
@@ -208,10 +223,21 @@ setSelectedUser(updated);
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
+                                    {user.role === 'host' && (
+                                        <span className="text-white font-medium">{user.homestays_count || 0} Kamar Properti</span>
+                                    )}
+                                    {user.role === 'guest' && (
+                                        <span className="text-white font-medium">{user.bookings_count || 0} Kali Reservasi</span>
+                                    )}
+                                    {user.role === 'admin' && (
+                                        <span className="text-gold font-medium">Platform Master</span>
+                                    )}
+                                </td>
+                                <td className="px-6 py-4">
                                     {getRoleBadge(user.role)}
                                 </td>
-                                <td className="px-6 py-4 text-center">
-                                    <div className="flex items-center justify-center gap-2">
+                                <td className="px-6 py-4 text-right">
+                                    <div className="flex items-center justify-end gap-2">
                                         {user.role === 'host' && (
                                             <Button
                                                 onClick={() => {

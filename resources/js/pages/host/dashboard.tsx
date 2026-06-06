@@ -51,6 +51,16 @@ interface HostDashboardProps {
 }
 
 export default function HostDashboard({ listingsCount, earnings, pendingApprovals = [], activeStays = [] }: HostDashboardProps) {
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '-';
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return dateString;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [openReceiptModal, setOpenReceiptModal] = useState(false);
     const [openApproveModal, setOpenApproveModal] = useState(false);
@@ -186,8 +196,8 @@ return;
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-2 text-[10px] border-y border-white/5 py-3 text-muted-foreground">
-                                        <div>Check-in: <strong className="text-white font-bold">{new Date(booking.check_in).toLocaleDateString('id-ID', { dateStyle: 'short' })}</strong></div>
-                                        <div>Check-out: <strong className="text-white font-bold">{new Date(booking.check_out).toLocaleDateString('id-ID', { dateStyle: 'short' })}</strong></div>
+                                        <div>Check-in: <strong className="text-white font-bold">{formatDate(booking.check_in)}</strong></div>
+                                        <div>Check-out: <strong className="text-white font-bold">{formatDate(booking.check_out)}</strong></div>
                                     </div>
 
                                     <div className="flex items-center gap-2">
@@ -279,8 +289,8 @@ return;
                                     </div>
 
                                     <div className="border-t border-white/5 pt-3 flex justify-between items-center text-[10px] text-muted-foreground">
-                                        <span>Check-in: <strong className="text-white font-bold">{new Date(booking.check_in).toLocaleDateString('id-ID', { dateStyle: 'short' })}</strong></span>
-                                        <span>Check-out: <strong className="text-white font-bold">{new Date(booking.check_out).toLocaleDateString('id-ID', { dateStyle: 'short' })}</strong></span>
+                                        <span>Check-in: <strong className="text-white font-bold">{formatDate(booking.check_in)}</strong></span>
+                                        <span>Check-out: <strong className="text-white font-bold">{formatDate(booking.check_out)}</strong></span>
                                         <span className="rounded bg-emerald-500/10 px-2 py-0.5 font-bold text-emerald-400 uppercase tracking-widest text-[8px]">In Stay</span>
                                     </div>
                                 </Card>

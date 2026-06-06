@@ -55,8 +55,6 @@ interface Homestay {
     city: string;
     price_per_night: number;
     max_guests: number;
-    latitude: number;
-    longitude: number;
     host: Host;
     media: Media[];
     roomMedia?: Media[];
@@ -71,7 +69,198 @@ interface ShowProps {
     bookedDates: string[];
 }
 
+function InteractiveCalendar({ bookedDates = [], checkIn, checkOut, onChange }: { 
+    bookedDates: string[]; 
+    checkIn: string; 
+    checkOut: string; 
+    onChange: (checkIn: string, checkOut: string) => void;
+}) {
+    const [currentMonth, setCurrentMonth] = useState(new Date());
+
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth(); // 0-indexed
+
+    const prevMonth = () => {
+        const d = new Date(year, month - 1, 1);
+        setCurrentMonth(d);
+    };
+
+    const nextMonth = () => {
+        const d = new Date(year, month + 1, 1);
+        setCurrentMonth(d);
+    };
+
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+
+    const monthNames = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    const daysGrid = [];
+
+    for (let i = 0; i < firstDayIndex; i++) {
+        daysGrid.push(null);
+    }
+
+    for (let d = 1; d <= totalDays; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        daysGrid.push({
+            day: d,
+            dateStr,
+            isPast: dateStr < todayStr,
+            isBlocked: bookedDates.includes(dateStr),
+        });
+    }
+
+    const handleDayClick = (dayObj: any) => {
+        if (!dayObj || dayObj.isPast || dayObj.isBlocked) {
+            return;
+        }
+
+        const dateStr = dayObj.dateStr;
+
+        if (!checkIn || (checkIn && checkOut)) {
+            onChange(dateStr, '');
+        } else {
+            if (dateStr > checkIn) {
+                let hasBlockedBetween = false;
+                const start = new Date(checkIn);
+                const end = new Date(dateStr);
+                const curr = new Date(start);
+                curr.setDate(curr.getDate() + 1);
+
+                while (curr <= end) {
+                    const tempStr = curr.toISOString().split('T')[0];
+                    if (bookedDates.includes(tempStr)) {
+                        hasBlockedBetween = true;
+                        break;
+                    }
+                    curr.setDate(curr.getDate() + 1);
+                }
+
+                if (hasBlockedBetween) {
+                    onChange(dateStr, '');
+                } else {
+                    onChange(checkIn, dateStr);
+                }
+            } else {
+                onChange(dateStr, '');
+            }
+        }
+    };
+
+    const isSelected = (dateStr: string) => {
+        return dateStr === checkIn || dateStr === checkOut;
+    };
+
+    const isInRange = (dateStr: string) => {
+        if (!checkIn || !checkOut) {
+            return false;
+        }
+        return dateStr > checkIn && dateStr < checkOut;
+    };
+
+    return (
+        <div className="bg-black/30 border border-white/10 rounded-2xl p-4 space-y-3 select-none">
+            <div className="flex items-center justify-between">
+                <button 
+                    type="button" 
+                    onClick={prevMonth}
+                    className="p-1.5 rounded-lg border border-white/5 bg-white/5 hover:bg-gold hover:text-black transition-colors"
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </button>
+                <span className="font-outfit text-xs font-bold text-white uppercase tracking-wider">
+                    {monthNames[month]} {year}
+                </span>
+                <button 
+                    type="button" 
+                    onClick={nextMonth}
+                    className="p-1.5 rounded-lg border border-white/5 bg-white/5 hover:bg-gold hover:text-black transition-colors"
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </button>
+            </div>
+
+            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-white/40 uppercase">
+                <span>Min</span>
+                <span>Sen</span>
+                <span>Sel</span>
+                <span>Rab</span>
+                <span>Kam</span>
+                <span>Jum</span>
+                <span>Sab</span>
+            </div>
+
+            <div className="grid grid-cols-7 gap-1 text-xs">
+                {daysGrid.map((dayObj, idx) => {
+                    if (!dayObj) {
+                        return <div key={`empty-${idx}`} className="aspect-square"></div>;
+                    }
+
+                    const selected = isSelected(dayObj.dateStr);
+                    const range = isInRange(dayObj.dateStr);
+                    const disabled = dayObj.isPast || dayObj.isBlocked;
+
+                    let bgClass = "hover:bg-white/5 text-white/80";
+                    if (disabled) {
+                        bgClass = dayObj.isBlocked 
+                            ? "bg-rose-500/10 text-rose-400/50 line-through cursor-not-allowed border border-rose-500/10" 
+                            : "text-white/20 cursor-not-allowed";
+                    } else if (selected) {
+                        bgClass = "bg-gold text-black font-extrabold shadow-lg shadow-gold/20 scale-105 rounded-lg";
+                    } else if (range) {
+                        bgClass = "bg-gold/20 text-gold font-semibold rounded-lg";
+                    }
+
+                    return (
+                        <button
+                            key={dayObj.dateStr}
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => handleDayClick(dayObj)}
+                            className={`aspect-square flex items-center justify-center rounded-lg transition-all duration-200 ${bgClass}`}
+                            title={dayObj.isBlocked ? 'Sudah Dipesan (Tersewa)' : ''}
+                        >
+                            {dayObj.day}
+                        </button>
+                    );
+                })}
+            </div>
+            
+            <div className="flex items-center justify-center gap-4 text-[9px] text-white/40 pt-2 border-t border-white/5">
+                <div className="flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full bg-gold"></span>
+                    <span>Pilihan</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full bg-rose-500/20 border border-rose-500/30"></span>
+                    <span>Terisi</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full bg-white/10"></span>
+                    <span>Tersedia</span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function Show({ homestay, bookedDates = [] }: ShowProps) {
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '-';
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return dateString;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
     const mediaList = homestay.media || [];
     const roomMediaList = homestay.room_media || homestay.roomMedia || [];
     const allMedia = [
@@ -208,6 +397,56 @@ return m.source === 'interior';
         }
     };
 
+    const handleCalendarSelect = (checkInVal: string, checkOutVal: string) => {
+        const updated = { ...bookingDetails, check_in: checkInVal, check_out: checkOutVal };
+        setBookingDetails(updated);
+
+        if (updated.check_in && updated.check_out) {
+            const inDate = new Date(updated.check_in);
+            const outDate = new Date(updated.check_out);
+
+            // Date validation
+            if (inDate >= outDate) {
+                setBookingError('Tanggal Check-out harus setelah tanggal Check-in.');
+                setPriceCalculations(null);
+
+                return;
+            }
+
+            // Check blocked dates
+            let hasOverlap = false;
+            const current = new Date(inDate);
+
+            while (current <= outDate) {
+                const dateStr = current.toISOString().split('T')[0];
+
+                if (bookedDates.includes(dateStr)) {
+                    hasOverlap = true;
+                    break;
+                }
+
+                current.setDate(current.getDate() + 1);
+            }
+
+            if (hasOverlap) {
+                setBookingError('Maaf, salah satu tanggal dalam rentang pilihan Anda sudah dipesan.');
+                setPriceCalculations(null);
+
+                return;
+            }
+
+            setBookingError('');
+            const days = Math.ceil((outDate.getTime() - inDate.getTime()) / (1000 * 60 * 60 * 24));
+            setPriceCalculations({
+                days,
+                total: days * parseFloat(homestay.price_per_night as any),
+            });
+        } else {
+            setPriceCalculations(null);
+            setBookingError('');
+        }
+    };
+
     const proceedToCheckout = () => {
         if (!bookingDetails.check_in || !bookingDetails.check_out) {
             setBookingError('Silakan lengkapi tanggal Check-in dan Check-out Anda.');
@@ -295,35 +534,85 @@ return;
                     </div>
 
                     {/* Photo Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {filteredMedia.map((media, index) => (
-                            <div
-                                key={media.id}
-                                onClick={() => openLightbox(index)}
-                                className={`relative group cursor-pointer overflow-hidden rounded-2xl border border-white/5 ${
-                                    index === 0 ? 'col-span-2 row-span-2 aspect-[4/3] md:aspect-auto' : 'aspect-square'
-                                }`}
-                            >
-                                <img
-                                    src={media.file_path}
-                                    alt="Homestay Area"
-                                    className="h-full w-full object-cover transition-transform duration-700 hover:scale-103 no-select-img"
-                                    draggable="false"
-                                    onContextMenu={(e) => e.preventDefault()}
-                                />
-                                {media.type === 'video' ? (
-                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/60 transition-colors">
-                                        <div className="bg-white/20 p-3 rounded-full backdrop-blur-md">
-                                            <VideoIcon className="h-8 w-8 text-white" />
+                    <div className="relative">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 rounded-3xl overflow-hidden border border-white/10 bg-black/40 p-2">
+                            {/* Large Main Photo (left) */}
+                            {filteredMedia.slice(0, 1).map((media, index) => (
+                                <div
+                                    key={media.id}
+                                    onClick={() => openLightbox(0)}
+                                    className="md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto relative group cursor-pointer overflow-hidden rounded-2xl border border-white/5"
+                                >
+                                    <img
+                                        src={media.file_path}
+                                        alt="Main Gallery"
+                                        className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.02] no-select-img"
+                                        draggable="false"
+                                    />
+                                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-colors duration-300" />
+                                    {media.type === 'video' ? (
+                                        <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                                            <div className="bg-white/20 p-4 rounded-full backdrop-blur-md">
+                                                <VideoIcon className="h-8 w-8 text-white" />
+                                            </div>
                                         </div>
+                                    ) : (
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                            <Sparkles className="h-6 w-6 text-gold animate-pulse" />
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {/* 4 Small Photos (right) */}
+                            <div className="md:col-span-2 grid grid-cols-2 gap-3">
+                                {filteredMedia.slice(1, 5).map((media, index) => (
+                                    <div
+                                        key={media.id}
+                                        onClick={() => openLightbox(index + 1)}
+                                        className="aspect-square relative group cursor-pointer overflow-hidden rounded-xl border border-white/5 bg-black/20"
+                                    >
+                                        <img
+                                            src={media.file_path}
+                                            alt="Gallery Grid"
+                                            className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.03] no-select-img"
+                                            draggable="false"
+                                        />
+                                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-colors duration-300" />
+                                        {media.type === 'video' ? (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                <VideoIcon className="h-6 w-6 text-white" />
+                                            </div>
+                                        ) : (
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                                <Sparkles className="h-4 w-4 text-gold" />
+                                            </div>
+                                        )}
                                     </div>
-                                ) : (
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                        <Sparkles className="h-6 w-6 text-gold animate-pulse" />
+                                ))}
+
+                                {/* Fill in placeholders if there are fewer than 5 photos */}
+                                {filteredMedia.length < 5 && Array.from({ length: 5 - filteredMedia.length }).map((_, placeholderIdx) => (
+                                    <div
+                                        key={`placeholder-${placeholderIdx}`}
+                                        className="aspect-square relative rounded-xl border border-white/5 bg-white/5 flex items-center justify-center text-white/20"
+                                    >
+                                        <Home className="h-6 w-6" />
                                     </div>
-                                )}
+                                ))}
                             </div>
-                        ))}
+                        </div>
+
+                        {/* Show all photos button */}
+                        {filteredMedia.length > 5 && (
+                            <button
+                                onClick={() => openLightbox(0)}
+                                className="absolute bottom-6 right-6 bg-black/85 hover:bg-white text-white hover:text-black font-bold text-xs py-2.5 px-4 rounded-xl border border-white/10 hover:border-white transition-all flex items-center gap-1.5 shadow-2xl active:scale-95"
+                            >
+                                <Sparkles className="h-3.5 w-3.5" />
+                                Lihat Semua Foto ({filteredMedia.length})
+                            </button>
+                        )}
                     </div>
                 </section>
 
@@ -398,6 +687,16 @@ return;
                                     />
                                 </div>
 
+                                <div className="space-y-1.5 pt-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-1">Pilih Jadwal Menginap (Klik Kalender)</label>
+                                    <InteractiveCalendar
+                                        bookedDates={bookedDates}
+                                        checkIn={bookingDetails.check_in}
+                                        checkOut={bookingDetails.check_out}
+                                        onChange={handleCalendarSelect}
+                                    />
+                                </div>
+
                                 <div className="relative space-y-1.5" ref={guestsDropdownRef}>
                                     <label className="text-[10px] font-bold uppercase tracking-wider text-white/40">Jumlah Tamu</label>
                                     <div
@@ -438,6 +737,23 @@ return;
                                     )}
                                 </div>
                             </div>
+
+                            {/* Blocked/Occupied Dates Indicator */}
+                            {bookedDates && bookedDates.length > 0 && (
+                                <div className="space-y-1.5 p-3.5 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
+                                    <span className="block text-[9px] font-bold text-rose-400 uppercase tracking-widest">Tanggal Kamar Terisi (Blocked):</span>
+                                    <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto pr-1">
+                                        {bookedDates.map((dateStr) => (
+                                            <span 
+                                                key={dateStr} 
+                                                className="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[8px] px-2.5 py-0.5 rounded-md font-sans"
+                                            >
+                                                {formatDate(dateStr)}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Booking errors alert */}
                             {bookingError && (
@@ -508,7 +824,7 @@ return;
                                             </div>
                                             <div>
                                                 <span className="block text-xs font-bold text-white">{rev.guest?.name || 'Tamu'}</span>
-                                                <span className="text-[9px] text-white/30">{new Date(rev.created_at).toLocaleDateString('id-ID')}</span>
+                                                <span className="text-[9px] text-white/30">{formatDate(rev.created_at)}</span>
                                             </div>
                                         </div>
 

@@ -145,8 +145,6 @@ class DatabaseSeeder extends Seeder
                 'city' => 'Lhokseumawe',
                 'price_per_night' => 450000.00,
                 'max_guests' => 2,
-                'latitude' => 5.17016,
-                'longitude' => 97.1215276,
                 'status' => 'active',
                 'media' => [
                     ['url' => 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1000&q=80', 'category' => 'exterior_front', 'primary' => true],
@@ -170,8 +168,6 @@ class DatabaseSeeder extends Seeder
                 'city' => 'Lhokseumawe',
                 'price_per_night' => 690000.00,
                 'max_guests' => 3,
-                'latitude' => 5.17016,
-                'longitude' => 97.1215276,
                 'status' => 'active',
                 'media' => [
                     ['url' => 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1000&q=80', 'category' => 'exterior_front', 'primary' => true],
@@ -193,9 +189,7 @@ class DatabaseSeeder extends Seeder
                 'city' => 'Lhokseumawe',
                 'price_per_night' => 550000.00,
                 'max_guests' => 4,
-                'latitude' => 5.17016,
-                'longitude' => 97.1215276,
-                'status' => 'active',
+                'status' => 'tutup',
                 'media' => [
                     ['url' => 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1000&q=80', 'category' => 'exterior_front', 'primary' => true],
                     ['url' => 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80', 'category' => 'garden', 'primary' => false],
@@ -216,18 +210,16 @@ class DatabaseSeeder extends Seeder
                 'city' => 'Lhokseumawe',
                 'price_per_night' => 890000.00,
                 'max_guests' => 8,
-                'latitude' => 5.17016,
-                'longitude' => 97.1215276,
                 'status' => 'active',
                 'media' => [
                     ['url' => 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1000&q=80', 'category' => 'exterior_front', 'primary' => true],
                     ['url' => 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80', 'category' => 'garden', 'primary' => false],
                 ],
                 'rooms' => [
-                    ['url' => 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=800&q=80', 'category' => 'bedroom_1'],
+                    ['url' => 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80', 'category' => 'bedroom_1'],
                     ['url' => 'https://images.unsplash.com/photo-1617325247661-675ab4d61273?auto=format&fit=crop&w=800&q=80', 'category' => 'bedroom_2'],
-                    ['url' => 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=800&q=80', 'category' => 'bathroom'],
-                    ['url' => 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80', 'category' => 'living_room'],
+                    ['url' => 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&w=800&q=80', 'category' => 'bathroom'],
+                    ['url' => 'https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&w=800&q=80', 'category' => 'living_room'],
                 ],
                 'amenities' => [0, 1, 3, 4, 5, 6, 7],
             ],
@@ -243,8 +235,6 @@ class DatabaseSeeder extends Seeder
                 'city' => $hData['city'],
                 'price_per_night' => $hData['price_per_night'],
                 'max_guests' => $hData['max_guests'],
-                'latitude' => $hData['latitude'],
-                'longitude' => $hData['longitude'],
                 'status' => $hData['status'],
                 'category' => $hData['category'],
             ]);
@@ -311,6 +301,22 @@ class DatabaseSeeder extends Seeder
                 'paid_at' => now(),
                 'status' => 'pending_approval',
             ]);
+
+            // Add an active confirmed booking for Executive Glass Suite to make it occupied ("Tersewa") today
+            if ($homestay->name === 'Executive Glass Suite') {
+                Booking::create([
+                    'user_id' => $guest->id,
+                    'homestay_id' => $homestay->id,
+                    'payment_method_id' => 1, // BSI
+                    'check_in' => now()->subDays(1)->format('Y-m-d'),
+                    'check_out' => now()->addDays(2)->format('Y-m-d'),
+                    'total_guests' => 2,
+                    'total_price' => $homestay->price_per_night * 3,
+                    'payment_receipt_path' => 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=MockReceiptImage',
+                    'paid_at' => now()->subDays(1),
+                    'status' => 'confirmed',
+                ]);
+            }
         }
 
         // 7. Seed support tickets

@@ -22,6 +22,8 @@ interface Homestay {
     max_guests: number;
     media: any[];
     average_rating: number;
+    display_status?: string;
+    status?: string;
 }
 
 interface ExploreProps {
@@ -396,6 +398,13 @@ params.guests = guests;
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent"></div>
                                                 
+                                                {/* Status Badge */}
+                                                <div className="absolute top-4 left-4">
+                                                    <span className="bg-emerald-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-wider font-outfit shadow-lg border border-emerald-400/20">
+                                                        Ready
+                                                    </span>
+                                                </div>
+
                                                 <div className="absolute top-4 right-4 flex items-center space-x-1 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-gold">
                                                     <Star className="h-3 w-3 fill-gold" />
                                                     <span>{homestay.average_rating ? homestay.average_rating.toFixed(1) : '5.0'}</span>

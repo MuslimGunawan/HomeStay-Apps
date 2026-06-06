@@ -13,6 +13,7 @@ import {
     ChevronRight,
     Compass
 } from 'lucide-react';
+import DragDropUpload from '@/components/DragDropUpload';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -51,8 +52,6 @@ export default function Create({ amenities = [], categories = [] }: CreateProps)
         city: 'Lhokseumawe', // Default Lhokseumawe context
         price_per_night: '',
         max_guests: '2',
-        latitude: '5.1801', // Lhokseumawe default coords
-        longitude: '97.1407',
         category: '',
         amenities: [] as number[],
         custom_amenities: [] as string[],
@@ -335,27 +334,7 @@ export default function Create({ amenities = [], categories = [] }: CreateProps)
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-1.5 text-left">
-                                        <Label htmlFor="latitude" className="text-xs text-white/60">Latitude Koordinat Peta</Label>
-                                        <Input 
-                                            id="latitude"
-                                            value={form.data.latitude}
-                                            onChange={(e) => form.setData('latitude', e.target.value)}
-                                            className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
-                                        />
-                                    </div>
 
-                                    <div className="space-y-1.5 text-left">
-                                        <Label htmlFor="longitude" className="text-xs text-white/60">Longitude Koordinat Peta</Label>
-                                        <Input 
-                                            id="longitude"
-                                            value={form.data.longitude}
-                                            onChange={(e) => form.setData('longitude', e.target.value)}
-                                            className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
-                                        />
-                                    </div>
-                                </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-1.5 text-left">
@@ -483,12 +462,13 @@ export default function Create({ amenities = [], categories = [] }: CreateProps)
                                     <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
                                         Foto ini wajib diunggah. Kami akan menempelkan logo watermark secara lossless di pojok gambar. Gunakan foto tampak luar terindah (maks. 15MB).
                                     </p>
-                                    <Input 
-                                        id="primary"
-                                        type="file" 
+                                    <DragDropUpload 
+                                        onChange={(file) => form.setData('primary_image', file)}
+                                        value={form.data.primary_image}
                                         accept="image/*"
-                                        onChange={(e) => form.setData('primary_image', e.target.files ? e.target.files[0] : null)}
-                                        className="w-full bg-black/40 border-white/10 mt-3 px-4 py-2 rounded-xl text-xs text-white focus:border-gold cursor-pointer"
+                                        maxSizeMB={15}
+                                        className="mt-3"
+                                        placeholderText="Drag & drop foto utama kamar di sini, atau klik untuk memilih"
                                     />
                                     {form.errors.primary_image && <span className="text-[10px] text-rose-400 block mt-1">{form.errors.primary_image}</span>}
                                 </div>
@@ -520,15 +500,16 @@ export default function Create({ amenities = [], categories = [] }: CreateProps)
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div className="space-y-1.5">
                                                     <Label className="text-[10px] text-white/50">File Gambar / Video Walkthrough (Maks 100MB)</Label>
-                                                    <Input 
-                                                        type="file"
-                                                        accept="image/*,video/*"
-                                                        onChange={(e) => {
+                                                    <DragDropUpload 
+                                                        onChange={(file) => {
                                                             const updated = [...otherMediaFiles];
-                                                            updated[idx].file = e.target.files ? e.target.files[0] : null;
+                                                            updated[idx].file = file;
                                                             setOtherMediaFiles(updated);
                                                         }}
-                                                        className="w-full bg-black/40 border-white/10 text-xs cursor-pointer"
+                                                        value={val.file}
+                                                        accept="image/*,video/*"
+                                                        maxSizeMB={100}
+                                                        placeholderText="Drag & drop file media di sini"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
@@ -596,15 +577,16 @@ export default function Create({ amenities = [], categories = [] }: CreateProps)
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div className="space-y-1.5">
                                                     <Label className="text-[10px] text-white/50">File Gambar / Video Walkthrough (Maks 100MB)</Label>
-                                                    <Input 
-                                                        type="file"
-                                                        accept="image/*,video/*"
-                                                        onChange={(e) => {
+                                                    <DragDropUpload 
+                                                        onChange={(file) => {
                                                             const updated = [...roomMediaFiles];
-                                                            updated[idx].file = e.target.files ? e.target.files[0] : null;
+                                                            updated[idx].file = file;
                                                             setRoomMediaFiles(updated);
                                                         }}
-                                                        className="w-full bg-black/40 border-white/10 text-xs cursor-pointer"
+                                                        value={val.file}
+                                                        accept="image/*,video/*"
+                                                        maxSizeMB={100}
+                                                        placeholderText="Drag & drop file media di sini"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">

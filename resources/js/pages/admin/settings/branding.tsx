@@ -6,7 +6,12 @@ import {
     Upload, 
     Lock, 
     HelpCircle,
-    Building
+    Building,
+    PhoneCall,
+    Mail,
+    MapPin,
+    Instagram,
+    Github
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -14,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import DragDropUpload from '@/components/DragDropUpload';
 
 interface SettingsData {
     homestay_name: string;
@@ -21,6 +27,11 @@ interface SettingsData {
     favicon: string;
     watermark_text: string;
     copy_watermark: string;
+    phone: string;
+    email: string;
+    address: string;
+    instagram: string;
+    github: string;
 }
 
 interface BrandingProps {
@@ -34,6 +45,11 @@ export default function BrandingSettings({ settings }: BrandingProps) {
         favicon: null as File | null,
         watermark_text: settings.watermark_text,
         copy_watermark: settings.copy_watermark,
+        phone: settings.phone || '',
+        email: settings.email || '',
+        address: settings.address || '',
+        instagram: settings.instagram || '',
+        github: settings.github || '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -83,6 +99,77 @@ export default function BrandingSettings({ settings }: BrandingProps) {
                             </div>
                         </div>
 
+                        {/* 2. CONTACT INFO & SOCIAL MEDIA SECTION */}
+                        <div className="space-y-4 border-t border-white/5 pt-6">
+                            <h3 className="font-outfit text-sm font-bold text-gold uppercase tracking-wider flex gap-1.5 items-center">
+                                <PhoneCall className="h-4 w-4" /> Kontak & Media Sosial
+                            </h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="phone" className="text-xs text-white/60">Nomor Telepon / WhatsApp</Label>
+                                    <Input 
+                                        id="phone"
+                                        value={form.data.phone}
+                                        onChange={(e) => form.setData('phone', e.target.value)}
+                                        className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                        placeholder="Cth: 0852-6001-4053"
+                                    />
+                                    {form.errors.phone && <span className="text-[10px] text-rose-400">{form.errors.phone}</span>}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="email" className="text-xs text-white/60">Email Kontak</Label>
+                                    <Input 
+                                        id="email"
+                                        type="email"
+                                        value={form.data.email}
+                                        onChange={(e) => form.setData('email', e.target.value)}
+                                        className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                        placeholder="Cth: yurihomestay@gmail.com"
+                                    />
+                                    {form.errors.email && <span className="text-[10px] text-rose-400">{form.errors.email}</span>}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="instagram" className="text-xs text-white/60">Instagram URL</Label>
+                                    <Input 
+                                        id="instagram"
+                                        value={form.data.instagram}
+                                        onChange={(e) => form.setData('instagram', e.target.value)}
+                                        className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                        placeholder="Cth: https://instagram.com/yurihomestay"
+                                    />
+                                    {form.errors.instagram && <span className="text-[10px] text-rose-400">{form.errors.instagram}</span>}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="github" className="text-xs text-white/60">GitHub URL</Label>
+                                    <Input 
+                                        id="github"
+                                        value={form.data.github}
+                                        onChange={(e) => form.setData('github', e.target.value)}
+                                        className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
+                                        placeholder="Cth: https://github.com/username/project"
+                                    />
+                                    {form.errors.github && <span className="text-[10px] text-rose-400">{form.errors.github}</span>}
+                                </div>
+
+                                <div className="col-span-1 md:col-span-2 space-y-1.5">
+                                    <Label htmlFor="address" className="text-xs text-white/60">Alamat Fisik Homestay</Label>
+                                    <textarea
+                                        id="address"
+                                        rows={2}
+                                        value={form.data.address}
+                                        onChange={(e) => form.setData('address', e.target.value)}
+                                        className="w-full bg-black/40 border border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold focus:outline-none"
+                                        placeholder="Cth: 54JC+JV2, Mns Mesjid, Kec. Muara Dua, Lhokseumawe, Aceh"
+                                    ></textarea>
+                                    {form.errors.address && <span className="text-[10px] text-rose-400">{form.errors.address}</span>}
+                                </div>
+                            </div>
+                        </div>
+
                         {/* 2. IMAGE ASSETS SECTION */}
                         <div className="space-y-4 border-t border-white/5 pt-6">
                             <h3 className="font-outfit text-sm font-bold text-gold uppercase tracking-wider flex gap-1.5 items-center">
@@ -90,34 +177,40 @@ export default function BrandingSettings({ settings }: BrandingProps) {
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-3 bg-black/25 p-4 rounded-xl border border-white/5">
-                                    <Label className="text-xs text-white/60 block font-bold">Logo Website Utama</Label>
-                                    {settings.logo && (
-                                        <div className="h-10 max-w-[120px] rounded-lg overflow-hidden bg-black/50 p-2 border border-white/10 flex items-center justify-center shrink-0">
-                                            <img src={settings.logo} alt="Logo" className="h-full object-contain" />
-                                        </div>
-                                    )}
-                                    <Input 
-                                        type="file"
+                                <div className="space-y-3 bg-black/25 p-4 rounded-xl border border-white/5 flex flex-col justify-between">
+                                    <div>
+                                        <Label className="text-xs text-white/60 block font-bold mb-2">Logo Website Utama</Label>
+                                        {settings.logo && (
+                                            <div className="h-10 max-w-[120px] rounded-lg overflow-hidden bg-black/50 p-2 border border-white/10 flex items-center justify-center shrink-0 mb-3">
+                                                <img src={settings.logo} alt="Logo" className="h-full object-contain" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <DragDropUpload 
+                                        onChange={(file) => form.setData('logo', file)}
+                                        value={form.data.logo}
                                         accept="image/*"
-                                        onChange={(e) => form.setData('logo', e.target.files ? e.target.files[0] : null)}
-                                        className="w-full bg-black/40 border-white/10 text-xs cursor-pointer"
+                                        maxSizeMB={5}
+                                        placeholderText="Drag & drop logo baru di sini"
                                     />
                                     {form.errors.logo && <span className="text-[10px] text-rose-400">{form.errors.logo}</span>}
                                 </div>
 
-                                <div className="space-y-3 bg-black/25 p-4 rounded-xl border border-white/5">
-                                    <Label className="text-xs text-white/60 block font-bold">Icon / Favicon Browser</Label>
-                                    {settings.favicon && (
-                                        <div className="h-10 w-10 rounded-lg overflow-hidden bg-black/50 border border-white/10 flex items-center justify-center shrink-0">
-                                            <img src={settings.favicon} alt="Favicon" className="h-6 w-6 object-contain" />
-                                        </div>
-                                    )}
-                                    <Input 
-                                        type="file"
+                                <div className="space-y-3 bg-black/25 p-4 rounded-xl border border-white/5 flex flex-col justify-between">
+                                    <div>
+                                        <Label className="text-xs text-white/60 block font-bold mb-2">Icon / Favicon Browser</Label>
+                                        {settings.favicon && (
+                                            <div className="h-10 w-10 rounded-lg overflow-hidden bg-black/50 border border-white/10 flex items-center justify-center shrink-0 mb-3">
+                                                <img src={settings.favicon} alt="Favicon" className="h-6 w-6 object-contain" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <DragDropUpload 
+                                        onChange={(file) => form.setData('favicon', file)}
+                                        value={form.data.favicon}
                                         accept="image/*"
-                                        onChange={(e) => form.setData('favicon', e.target.files ? e.target.files[0] : null)}
-                                        className="w-full bg-black/40 border-white/10 text-xs cursor-pointer"
+                                        maxSizeMB={1}
+                                        placeholderText="Drag & drop favicon baru di sini"
                                     />
                                     {form.errors.favicon && <span className="text-[10px] text-rose-400">{form.errors.favicon}</span>}
                                 </div>

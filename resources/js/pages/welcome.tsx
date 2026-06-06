@@ -21,11 +21,11 @@ interface Homestay {
     city: string;
     price_per_night: number;
     max_guests: number;
-    latitude: number;
-    longitude: number;
     media: Media[];
     reviews_count: number;
     average_rating: number;
+    display_status?: string;
+    status?: string;
 }
 
 interface Review {
@@ -50,6 +50,16 @@ interface WelcomeProps {
 export default function Welcome({ featuredHomestays = [], reviews = [] }: WelcomeProps) {
     const { name } = usePage().props as any;
     const siteName = name || 'Yuri-HomeStay';
+
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '-';
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return dateString;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
 
     const categories = Array.from(new Set(featuredHomestays.map(room => room.category).filter(Boolean))) as string[];
 
@@ -117,9 +127,91 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
     const yHeroBg1 = useTransform(scrollY, [0, 500], [0, 150]);
     const yHeroBg2 = useTransform(scrollY, [0, 500], [0, -100]);
 
+    const coverRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useScroll({
+        target: coverRef,
+        offset: ["start start", "end start"]
+    });
+
+    const scale = useTransform(scrollYProgress, [0, 1], [1, 0.78]);
+    const rotateX = useTransform(scrollYProgress, [0, 1], [0, 50]);
+    const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+    const yTranslate = useTransform(scrollYProgress, [0, 1], [0, -120]);
+
     return (
         <LuxuryLayout>
             <Head title="Booking Kamar Premium & Eksklusif" />
+
+            {/* 0. COVER SECTION (SAMPUL) WITH 3D SCROLL DRIVEN PERSPECTIVE */}
+            <div ref={coverRef} className="relative h-[160vh] bg-black w-full overflow-hidden -mt-24" style={{ perspective: '1200px' }}>
+                <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
+                    <motion.div
+                        style={{
+                            scale,
+                            rotateX,
+                            opacity,
+                            y: yTranslate,
+                            transformStyle: 'preserve-3d',
+                        }}
+                        className="relative w-full h-full flex flex-col justify-between p-12 text-white origin-bottom"
+                    >
+                        {/* Background Image with Dark Overlay */}
+                        <div 
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{ 
+                                backgroundImage: 'url("https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1600&q=80")',
+                                filter: 'brightness(0.35) contrast(1.1)' 
+                            }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+
+                        {/* Top: Bespoke Hospitality */}
+                        <div className="relative z-20 flex flex-col items-center text-center space-y-1 mt-6">
+                            <span className="block font-outfit text-[10px] md:text-xs font-bold tracking-[0.35em] text-white/80 uppercase font-bold">BESPOKE</span>
+                            <span className="block font-outfit text-[10px] md:text-xs font-bold tracking-[0.35em] text-white/80 uppercase font-bold">HOSPITALITY</span>
+                            <span className="block font-serif text-[11px] md:text-xs text-gold/80 italic mt-1 font-extralight tracking-wider">Luxury Business Hotel</span>
+                        </div>
+
+                        {/* Left: Circle (Mns Mesjid) */}
+                        <div className="absolute left-6 md:left-20 top-1/4 flex flex-col items-center gap-4 z-20">
+                            <div className="w-[1px] h-20 bg-gradient-to-b from-transparent via-gold to-gold" />
+                            <div className="h-20 w-20 rounded-full border border-white/20 bg-white/5 backdrop-blur-md flex flex-col items-center justify-center p-2 text-center shadow-2xl">
+                                <span className="text-[9px] font-outfit font-semibold uppercase tracking-wider text-white leading-tight">
+                                    Mns<br />Mesjid
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Bottom Left: Huge styled Title */}
+                        <div className="absolute bottom-16 left-6 md:left-16 z-20 text-left">
+                            <h2 className="font-serif text-5xl sm:text-7xl md:text-[8.5rem] font-light leading-[0.85] tracking-tight uppercase select-none text-white">
+                                YURI<br />
+                                <span className="italic font-extralight bg-gradient-to-r from-white via-white/80 to-gold bg-clip-text text-transparent animate-pulse">SUITES</span>
+                            </h2>
+                        </div>
+
+                        {/* Bottom Right: Book your stay button */}
+                        <div className="absolute bottom-16 right-6 md:right-16 z-20">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const element = document.getElementById('search-explore-section');
+                                    if (element) {
+                                        element.scrollIntoView({ behavior: 'smooth' });
+                                    }
+                                }}
+                                className="group flex items-center gap-3 bg-white/5 border border-white/20 hover:border-gold hover:bg-gold/10 px-6 py-4 rounded-full backdrop-blur-md transition-all duration-300 transform active:scale-95 cursor-pointer"
+                            >
+                                <span className="font-outfit text-[10px] md:text-xs font-bold tracking-widest text-white uppercase">BOOK YOUR STAY</span>
+                                <ArrowRight className="h-4 w-4 text-gold transform transition-transform group-hover:translate-x-1.5" />
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            </div>
+
+            {/* Anchor tag for scroll */}
+            <div id="search-explore-section" />
 
             {/* 1. HERO SECTION WITH GLOWING RADIAL AND HUGE BANNER */}
             <section className="relative flex flex-col items-center justify-center py-24 lg:py-36">
@@ -355,6 +447,13 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-transparent"></div>
                                         
+                                        {/* Status Badge */}
+                                        <div className="absolute top-4 left-4">
+                                            <span className="bg-emerald-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-wider font-outfit shadow-lg border border-emerald-400/20">
+                                                Ready
+                                            </span>
+                                        </div>
+
                                         {/* Dynamic Rating badge */}
                                         <div className="absolute top-4 right-4 flex items-center space-x-1 bg-black/75 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold text-gold">
                                             <Star className="h-3 w-3 fill-gold" />
@@ -501,7 +600,7 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
                                     ))}
                                 </div>
                                 <span className="text-[10px] text-white/30">
-                                    {new Date(r.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                                    {formatDate(r.created_at)}
                                 </span>
                             </div>
                             <p className="text-xs text-white/60 leading-relaxed font-sans italic">

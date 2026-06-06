@@ -147,7 +147,7 @@ return;
                                 <th scope="col" className="px-6 py-4">Ikon</th>
                                 <th scope="col" className="px-6 py-4">Nama Fasilitas</th>
                                 <th scope="col" className="px-6 py-4">Penjelasan Singkat</th>
-                                <th scope="col" className="px-6 py-4 text-center">Aksi</th>
+                                <th scope="col" className="px-6 py-4 text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -164,8 +164,8 @@ return;
                                     <td className="px-6 py-4 text-white/50 leading-relaxed font-sans max-w-sm">
                                         {amenity.description || 'Fasilitas premium untuk homestay.'}
                                     </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex items-center justify-center gap-2">
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-2">
                                             <Button
                                                 onClick={() => {
                                                     setSelectedAmenity(amenity);

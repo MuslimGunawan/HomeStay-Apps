@@ -30,6 +30,41 @@ export default function Homestays({ homestays = [] }: HomestaysProps) {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [deleteProcessing, setDeleteProcessing] = useState(false);
 
+    const [openStatusModal, setOpenStatusModal] = useState(false);
+    const [statusTargetHomestay, setStatusTargetHomestay] = useState<Homestay | null>(null);
+    const [targetStatus, setTargetStatus] = useState<string>('');
+    const [statusProcessing, setStatusProcessing] = useState(false);
+
+    const getNormalizedStatus = (status: string) => {
+        if (status === 'active' || status === 'aktif') return 'aktif';
+        if (status === 'inactive' || status === 'tutup') return 'tutup';
+        return status; // tersewa
+    };
+
+    const handleStatusChangeRequest = (homestay: Homestay, newStatus: string) => {
+        setStatusTargetHomestay(homestay);
+        setTargetStatus(newStatus);
+        setOpenStatusModal(true);
+    };
+
+    const handleStatusConfirm = () => {
+        if (!statusTargetHomestay) return;
+        setStatusProcessing(true);
+        router.post(route(`${prefix}.homestays.status` as any, { id: statusTargetHomestay.id }), {
+            status: targetStatus
+        }, {
+            onSuccess: () => {
+                toast.success('Status kamar berhasil diperbarui.');
+                setOpenStatusModal(false);
+                setStatusProcessing(false);
+            },
+            onError: () => {
+                toast.error('Gagal memperbarui status kamar.');
+                setStatusProcessing(false);
+            }
+        });
+    };
+
     const handleDelete = () => {
         if (!selectedHomestay) {
 return;
@@ -117,11 +152,27 @@ return;
                                         {homestay.address}, {homestay.city}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="px-6 pb-6 pt-2 text-xs text-muted-foreground flex-1">
-                                    <p className="line-clamp-2 leading-relaxed">{homestay.description}</p>
-                                    <div className="flex gap-4 mt-4 pt-4 border-t border-white/5 text-[11px] text-white">
-                                        <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5 text-gold shrink-0" /> Maks. {homestay.max_guests} Tamu</span>
-                                        <span className="font-bold text-gold ml-auto">Rp {parseFloat(homestay.price_per_night as any).toLocaleString('id-ID')}/mlm</span>
+                                <CardContent className="px-6 pb-6 pt-2 text-xs text-muted-foreground flex-1 flex flex-col justify-between">
+                                    <p className="line-clamp-2 leading-relaxed mb-4">{homestay.description}</p>
+                                    <div className="space-y-3 mt-auto shrink-0">
+                                        <div className="flex gap-4 pt-4 border-t border-white/5 text-[11px] text-white">
+                                            <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5 text-gold shrink-0" /> Maks. {homestay.max_guests} Tamu</span>
+                                            <span className="font-bold text-gold ml-auto">Rp {parseFloat(homestay.price_per_night as any).toLocaleString('id-ID')}/mlm</span>
+                                        </div>
+
+                                        {/* Status Switcher Selector directly on Card */}
+                                        <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2 px-3">
+                                            <span className="text-[10px] text-white/50 font-bold uppercase shrink-0">Status Kamar:</span>
+                                            <select
+                                                value={getNormalizedStatus(homestay.status)}
+                                                onChange={(e) => handleStatusChangeRequest(homestay, e.target.value)}
+                                                className="bg-transparent border-0 text-[10.5px] text-gold font-bold focus:ring-0 focus:outline-none p-0 cursor-pointer w-full font-outfit"
+                                            >
+                                                <option value="aktif" className="bg-[#0f0f0f] text-emerald-400 font-bold">Aktif (Ready)</option>
+                                                <option value="tersewa" className="bg-[#0f0f0f] text-amber-400 font-bold">Tersewa</option>
+                                                <option value="tutup" className="bg-[#0f0f0f] text-rose-400 font-bold">Tutup (Sembunyikan)</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </CardContent>
                                 <CardFooter className="p-6 pt-0 gap-3 mt-auto shrink-0">
@@ -177,6 +228,47 @@ return;
                             className="bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs px-6 rounded-xl"
                         >
                             {deleteProcessing ? 'Menghapus...' : 'Ya, Hapus Listing'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* CONFIRMATION STATUS MODAL */}
+            <Dialog open={openStatusModal} onOpenChange={setOpenStatusModal}>
+                <DialogContent className="bg-deep-charcoal border border-white/10 text-white max-w-sm rounded-2xl p-6 text-center backdrop-blur-md">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gold/10 text-gold mb-4">
+                        <Hotel className="h-6 w-6 text-gold" />
+                    </div>
+
+                    <DialogHeader className="text-center">
+                        <DialogTitle className="font-outfit text-lg font-bold text-white text-center w-full block">Ubah Status Kamar?</DialogTitle>
+                        <DialogDescription className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                            Apakah Anda yakin ingin mengubah status kamar <strong>{statusTargetHomestay?.name}</strong> menjadi <strong className="text-gold capitalize">{targetStatus === 'aktif' ? 'Aktif (Ready)' : targetStatus}</strong>?
+                            {targetStatus === 'tutup' && ' Kamar ini akan disembunyikan dari halaman depan pencarian tamu secara otomatis.'}
+                            {targetStatus === 'aktif' && ' Kamar ini akan ditampilkan kembali dan siap dipesan oleh tamu.'}
+                            {targetStatus === 'tersewa' && ' Kamar ini akan ditandai sebagai Tersewa di halaman depan.'}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter className="flex justify-end gap-2 pt-6 mt-4 border-t border-white/5 w-full">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => {
+                                setOpenStatusModal(false);
+                                setStatusTargetHomestay(null);
+                            }}
+                            className="text-white/60 hover:text-white text-xs font-bold"
+                            disabled={statusProcessing}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            onClick={handleStatusConfirm}
+                            disabled={statusProcessing}
+                            className="bg-gold hover:bg-white text-black font-bold text-xs px-6 rounded-xl"
+                        >
+                            {statusProcessing ? 'Memproses...' : 'Ya, Ubah Status'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

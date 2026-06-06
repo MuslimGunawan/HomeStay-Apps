@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 import CustomCursor from '@/components/CustomCursor';
 import PillNavbar from '@/components/PillNavbar';
 import Preloader from '@/components/Preloader';
+import { useAppearance } from '@/hooks/use-appearance';
 
 interface LuxuryLayoutProps {
     children: ReactNode;
@@ -13,7 +14,9 @@ interface LuxuryLayoutProps {
 
 export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
     const [showScrollTop, setShowScrollTop] = useState(false);
-    const { name } = usePage().props as any;
+    const { name, phone, email, address, instagram, github } = usePage().props as any;
+    const { resolvedAppearance } = useAppearance();
+    const isDark = resolvedAppearance === 'dark';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -49,7 +52,11 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-[#ededec] selection:bg-[#c5a880] selection:text-black overflow-x-hidden">
+        <div className={`min-h-screen transition-colors duration-300 ${
+            isDark 
+                ? 'bg-[#050505] text-[#ededec] selection:bg-[#c5a880] selection:text-black' 
+                : 'bg-[#fafafa] text-[#1a1a1a] selection:bg-[#c5a880] selection:text-white'
+        } overflow-x-hidden`}>
             {/* Custom Preloader */}
             <Preloader />
 
@@ -65,7 +72,9 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
             </main>
 
             {/* High-Fidelity Luxurious Footer */}
-            <footer className="relative mt-auto border-t border-white/5 bg-[#0a0a0a] pt-16 pb-8">
+            <footer className={`relative mt-auto border-t transition-colors duration-300 ${
+                isDark ? 'border-white/5 bg-[#0a0a0a]' : 'border-black/5 bg-[#f5f5f4]'
+            } pt-16 pb-8`}>
                 {/* Background soft glowing blur radial circle */}
                 <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-gold/5 blur-[120px] pointer-events-none"></div>
                 
@@ -73,7 +82,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                         {/* Column 1: Brand Info */}
                         <div className="space-y-4">
-                            <span className="font-outfit text-2xl font-extrabold tracking-widest text-white">
+                            <span className={`font-outfit text-2xl font-extrabold tracking-widest ${isDark ? 'text-white' : 'text-neutral-900'}`}>
                                 {(() => {
                                     const siteName = (name || 'Yuri-HomeStay').toUpperCase();
 
@@ -102,7 +111,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                                     );
                                 })()}
                             </span>
-                            <p className="text-xs text-white/50 leading-relaxed max-w-xs">
+                            <p className={`text-xs leading-relaxed max-w-xs ${isDark ? 'text-white/50' : 'text-neutral-600'}`}>
                                 Layanan booking kamar mewah premium di Yuri-HomeStay Lhokseumawe. Memberikan pengalaman menginap eksklusif, aman, nyaman, dan tak terlupakan.
                             </p>
                         </div>
@@ -110,7 +119,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                         {/* Column 2: Quick Links */}
                         <div className="space-y-4">
                             <h4 className="font-outfit text-sm font-semibold tracking-wider uppercase text-gold">Tautan</h4>
-                            <ul className="space-y-2 text-xs text-white/60">
+                            <ul className={`space-y-2 text-xs ${isDark ? 'text-white/60' : 'text-neutral-600'}`}>
                                 <li><a href="/" className="hover:text-gold transition-colors">Beranda</a></li>
                                 <li><a href="/explore" className="hover:text-gold transition-colors">Cari Kamar</a></li>
                                 <li><a href="/help" className="hover:text-gold transition-colors">Pusat Bantuan</a></li>
@@ -120,7 +129,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                         {/* Column 3: Kamar Pilihan */}
                         <div className="space-y-4">
                             <h4 className="font-outfit text-sm font-semibold tracking-wider uppercase text-gold">Kamar Pilihan</h4>
-                            <ul className="space-y-2 text-xs text-white/60">
+                            <ul className={`space-y-2 text-xs ${isDark ? 'text-white/60' : 'text-neutral-600'}`}>
                                 <li><a href="/explore" className="hover:text-gold transition-colors">Deluxe Premium Room</a></li>
                                 <li><a href="/explore" className="hover:text-gold transition-colors">Executive Glass Suite</a></li>
                                 <li><a href="/explore" className="hover:text-gold transition-colors">Heritage Suite Joglo</a></li>
@@ -131,30 +140,32 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                         {/* Column 4: Contact Support */}
                         <div className="space-y-4">
                             <h4 className="font-outfit text-sm font-semibold tracking-wider uppercase text-gold">Kontak Kami</h4>
-                            <ul className="space-y-3 text-xs text-white/60">
+                            <ul className={`space-y-3 text-xs ${isDark ? 'text-white/60' : 'text-neutral-600'}`}>
                                 <li className="flex items-start space-x-2">
                                     <MapPin className="h-4 w-4 text-gold shrink-0 mt-0.5" />
-                                    <span>54JC+JV2, Mns Mesjid, Kec. Muara Dua, Lhokseumawe, Aceh</span>
+                                    <span>{address || '54JC+JV2, Mns Mesjid, Kec. Muara Dua, Lhokseumawe, Aceh'}</span>
                                 </li>
                                 <li className="flex items-center space-x-2">
                                     <PhoneCall className="h-4 w-4 text-gold shrink-0" />
-                                    <span>0852-6001-4053</span>
+                                    <span>{phone || '0852-6001-4053'}</span>
                                 </li>
                                 <li className="flex items-center space-x-2">
                                     <Mail className="h-4 w-4 text-gold shrink-0" />
-                                    <span>yurihomestay@gmail.com</span>
+                                    <span>{email || 'yurihomestay@gmail.com'}</span>
                                 </li>
                             </ul>
                         </div>
                     </div>
 
                     {/* Bottom strip */}
-                    <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-white/40 text-[11px]">
+                    <div className={`border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 ${
+                        isDark ? 'border-white/5 text-white/40' : 'border-black/5 text-neutral-500'
+                    } text-[11px]`}>
                         <p>© {new Date().getFullYear()} {name || 'Yuri-HomeStay'} (UAS PABW Lanjut). All Rights Reserved.</p>
                         
                         <div className="flex space-x-4">
-                            <a href="#" className="hover:text-gold transition-colors"><Instagram className="h-4 w-4" /></a>
-                            <a href="#" className="hover:text-gold transition-colors"><Github className="h-4 w-4" /></a>
+                            <a href={instagram || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors"><Instagram className="h-4 w-4" /></a>
+                            <a href={github || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors"><Github className="h-4 w-4" /></a>
                         </div>
                     </div>
                 </div>

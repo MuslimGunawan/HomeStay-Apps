@@ -30,6 +30,7 @@ class BookingController extends Controller
             ->get()
             ->map(function ($h) {
                 $h->average_rating = $h->average_rating; // trigger attribute
+                $h->display_status = $h->display_status;
 
                 return $h;
             });
@@ -100,6 +101,7 @@ class BookingController extends Controller
 
         $results = $query->get()->map(function ($h) {
             $h->average_rating = $h->average_rating;
+            $h->display_status = $h->display_status;
 
             return $h;
         });

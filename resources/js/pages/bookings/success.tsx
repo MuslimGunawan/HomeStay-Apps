@@ -3,6 +3,7 @@ import { Clipboard, Check, Eye, EyeOff, UploadCloud, FileText, CheckCircle, Cred
 import { useState } from 'react';
 import { toast } from 'sonner';
 import LuxuryLayout from '@/layouts/LuxuryLayout';
+import DragDropUpload from '@/components/DragDropUpload';
 
 interface Booking {
     id: number;
@@ -224,29 +225,13 @@ export default function Success({ booking, tempPassword, newUser }: SuccessProps
                         </div>
 
                         <form onSubmit={handleUploadSubmit} className="space-y-4">
-                            <div className="border-2 border-dashed border-white/10 hover:border-gold/30 p-6 rounded-3xl text-center space-y-3 bg-black/20 cursor-pointer relative transition-all duration-300">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    required
-                                    onChange={handleFileChange}
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                />
-
-                                <UploadCloud className="mx-auto h-10 w-10 text-gold animate-pulse" />
-                                
-                                {data.payment_receipt ? (
-                                    <div className="space-y-1">
-                                        <span className="text-xs font-bold text-white block">Berkas Terpilih</span>
-                                        <span className="text-[10px] text-gold block truncate font-mono">{(data.payment_receipt as File).name}</span>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-1">
-                                        <span className="text-xs font-semibold text-white block">Pilih Berkas Foto Bukti</span>
-                                        <span className="text-[10px] text-white/40 block">Maksimal ukuran file: 15MB</span>
-                                    </div>
-                                )}
-                            </div>
+                            <DragDropUpload 
+                                onChange={(file) => setData('payment_receipt', file)}
+                                value={data.payment_receipt}
+                                accept="image/*"
+                                maxSizeMB={15}
+                                placeholderText="Drag & drop foto bukti transfer di sini"
+                            />
 
                             {progress && (
                                 <div className="w-full bg-white/10 rounded-full h-1 overflow-hidden">

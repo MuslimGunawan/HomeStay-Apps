@@ -8,6 +8,7 @@ use App\Models\Homestay;
 use App\Models\HomestayMedia;
 use App\Models\RoomMedia;
 use App\Models\StayComplaint;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -127,9 +128,7 @@ class HostController extends Controller
             'city' => 'required|string',
             'price_per_night' => 'required|numeric|min:0',
             'max_guests' => 'required|integer|min:1',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'status' => 'required|string|in:active,inactive',
+            'status' => 'required|string|in:active,inactive,aktif,tersewa,tutup',
             'amenities' => 'array',
             'primary_image' => 'required|image|max:15360', // 15MB
             'other_media.*' => 'nullable|file|max:102400', // 100MB for video/image
@@ -154,8 +153,6 @@ class HostController extends Controller
                 'city' => $request->city,
                 'price_per_night' => $request->price_per_night,
                 'max_guests' => $request->max_guests,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
                 'status' => $request->status,
                 'category' => $request->category,
             ]);
@@ -298,12 +295,10 @@ class HostController extends Controller
             'city' => 'required|string',
             'price_per_night' => 'required|numeric|min:0',
             'max_guests' => 'required|integer|min:1',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
             'amenities' => 'array',
             'custom_amenities' => 'nullable|array',
             'primary_image' => 'nullable|image|max:15360',
-            'status' => 'required|string|in:active,inactive',
+            'status' => 'required|string|in:active,inactive,aktif,tersewa,tutup',
             'category' => 'required|string|max:255',
         ]);
 
@@ -316,8 +311,6 @@ class HostController extends Controller
                 'city' => $request->city,
                 'price_per_night' => $request->price_per_night,
                 'max_guests' => $request->max_guests,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
                 'status' => $request->status,
                 'category' => $request->category,
             ]);
@@ -601,5 +594,102 @@ class HostController extends Controller
     {
         $relPath = str_replace('/storage/', '', $filePath);
         Storage::disk('public')->delete($relPath);
+    }
+
+    /**
+     * Complete Booking - Check-out guest.
+     */
+    public function completeReservation(string $id)
+    {
+        $booking = Booking::with('homestay')->findOrFail($id);
+
+        if (! Auth::user()->isAdmin() && $booking->homestay->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $booking->update([
+            'status' => 'completed',
+        ]);
+
+        return back()->with('success', 'Reservasi tamu berhasil diselesaikan (Check-out).');
+    }
+
+    /**
+     * Extend Booking stay duration.
+     */
+    public function extendReservation(Request $request, string $id)
+    {
+        $request->validate([
+            'check_out' => 'required|date|after:today',
+        ]);
+
+        $booking = Booking::with('homestay')->findOrFail($id);
+
+        if (! Auth::user()->isAdmin() && $booking->homestay->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $checkIn = new Carbon($booking->check_in);
+        $newCheckOut = new Carbon($request->check_out);
+
+        if ($newCheckOut->lte($checkIn)) {
+            return back()->withErrors(['check_out' => 'Tanggal check-out baru harus setelah tanggal check-in.']);
+        }
+
+        // Check overlapping bookings
+        $overlap = Booking::where('homestay_id', $booking->homestay_id)
+            ->where('id', '!=', $booking->id)
+            ->whereIn('status', ['confirmed', 'pending_approval'])
+            ->where(function ($q) use ($checkIn, $newCheckOut) {
+                $q->whereBetween('check_in', [$checkIn, $newCheckOut->copy()->subDay()])
+                    ->orWhereBetween('check_out', [$checkIn->copy()->addDay(), $newCheckOut])
+                    ->orWhere(function ($sq) use ($checkIn, $newCheckOut) {
+                        $sq->where('check_in', '<=', $checkIn)
+                            ->where('check_out', '>=', $newCheckOut);
+                    });
+            })
+            ->exists();
+
+        if ($overlap) {
+            return back()->withErrors(['check_out' => 'Maaf, tanggal perpanjangan bertabrakan dengan pesanan terkonfirmasi lainnya.']);
+        }
+
+        $days = $checkIn->diffInDays($newCheckOut);
+        $newTotalPrice = $booking->homestay->price_per_night * $days;
+
+        $booking->update([
+            'check_out' => $newCheckOut->format('Y-m-d'),
+            'total_price' => $newTotalPrice,
+            // If the stay was completed, revive it back to confirmed
+            'status' => $booking->status === 'completed' ? 'confirmed' : $booking->status,
+        ]);
+
+        return back()->with('success', 'Masa menginap berhasil diperpanjang menjadi s/d '.$newCheckOut->format('d/m/Y').'.');
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $query = Homestay::query();
+        if (! Auth::user()->isAdmin()) {
+            $query->where('user_id', Auth::id());
+        }
+        $homestay = $query->findOrFail($id);
+
+        $request->validate([
+            'status' => 'required|string|in:aktif,active,tersewa,tutup,inactive',
+        ]);
+
+        $status = $request->status;
+        if ($status === 'active') {
+            $status = 'aktif';
+        } elseif ($status === 'inactive') {
+            $status = 'tutup';
+        }
+
+        $homestay->update([
+            'status' => $status,
+        ]);
+
+        return back()->with('success', 'Status kamar berhasil diperbarui.');
     }
 }

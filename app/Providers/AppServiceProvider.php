@@ -9,6 +9,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -28,6 +29,17 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // Auto check-out confirmed bookings whose check_out date has passed
+        try {
+            if (Schema::hasTable('bookings')) {
+                Booking::where('status', 'confirmed')
+                    ->where('check_out', '<', now()->format('Y-m-d'))
+                    ->update(['status' => 'completed']);
+            }
+        } catch (\Throwable $e) {
+            // Silence if database is not fully migrated yet
+        }
 
         // Core Gates for IDOR Protection
         Gate::define('manage-homestay', function (User $user, Homestay $homestay) {

@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import DragDropUpload from '@/components/DragDropUpload';
 
 interface Media {
     id: number;
@@ -39,8 +40,6 @@ interface EditProps {
         city: string;
         price_per_night: number;
         max_guests: number;
-        latitude: number;
-        longitude: number;
         status: string;
         media: Media[];
         amenities: Amenity[];
@@ -65,8 +64,6 @@ export default function Edit({ homestay, amenities = [], categories = [] }: Edit
         city: homestay.city,
         price_per_night: homestay.price_per_night.toString(),
         max_guests: homestay.max_guests.toString(),
-        latitude: homestay.latitude?.toString() || '',
-        longitude: homestay.longitude?.toString() || '',
         category: homestay.category || '',
         amenities: homestay.amenities.map(a => a.id),
         custom_amenities: [''] as string[],
@@ -306,27 +303,7 @@ export default function Edit({ homestay, amenities = [], categories = [] }: Edit
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-1.5 text-left">
-                                        <Label htmlFor="latitude" className="text-xs text-white/60">Latitude</Label>
-                                        <Input 
-                                            id="latitude"
-                                            value={form.data.latitude}
-                                            onChange={(e) => form.setData('latitude', e.target.value)}
-                                            className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
-                                        />
-                                    </div>
 
-                                    <div className="space-y-1.5 text-left">
-                                        <Label htmlFor="longitude" className="text-xs text-white/60">Longitude</Label>
-                                        <Input 
-                                            id="longitude"
-                                            value={form.data.longitude}
-                                            onChange={(e) => form.setData('longitude', e.target.value)}
-                                            className="w-full bg-black/40 border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold"
-                                        />
-                                    </div>
-                                </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-1.5 text-left">
@@ -460,21 +437,22 @@ export default function Edit({ homestay, amenities = [], categories = [] }: Edit
                                     </div>
                                 )}
 
-                                {/* Replace image file input */}
-                                <div className="space-y-1.5 text-left bg-gold/5 p-6 rounded-2xl border border-gold/10">
-                                    <Label htmlFor="primary" className="text-xs text-white font-bold block">Ganti Foto Utama Sampul Luar (Optional)</Label>
-                                    <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
-                                        Unggah foto baru jika Anda ingin mengganti foto sampul utama tampak depan. Foto lama akan otomatis dihapus permanen. Maksimal 15MB.
-                                    </p>
-                                    <Input 
-                                        id="primary"
-                                        type="file" 
-                                        accept="image/*"
-                                        onChange={(e) => form.setData('primary_image', e.target.files ? e.target.files[0] : null)}
-                                        className="w-full bg-black/40 border-white/10 mt-3 px-4 py-2 rounded-xl text-xs text-white focus:border-gold cursor-pointer"
-                                    />
-                                    {form.errors.primary_image && <span className="text-[10px] text-rose-400 block mt-1">{form.errors.primary_image}</span>}
-                                </div>
+                                 {/* Replace image file input */}
+                                 <div className="space-y-1.5 text-left bg-gold/5 p-6 rounded-2xl border border-gold/10">
+                                     <Label htmlFor="primary" className="text-xs text-white font-bold block">Ganti Foto Utama Sampul Luar (Optional)</Label>
+                                     <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
+                                         Unggah foto baru jika Anda ingin mengganti foto sampul utama tampak depan. Foto lama akan otomatis dihapus permanen. Maksimal 15MB.
+                                     </p>
+                                     <DragDropUpload 
+                                         onChange={(file) => form.setData('primary_image', file)}
+                                         value={form.data.primary_image}
+                                         accept="image/*"
+                                         maxSizeMB={15}
+                                         className="mt-3"
+                                         placeholderText="Drag & drop foto utama kamar di sini, atau klik untuk memilih"
+                                     />
+                                     {form.errors.primary_image && <span className="text-[10px] text-rose-400 block mt-1">{form.errors.primary_image}</span>}
+                                 </div>
 
                                 <div className="flex justify-between pt-6 border-t border-white/5">
                                     <Button

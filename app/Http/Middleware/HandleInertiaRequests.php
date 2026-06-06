@@ -38,6 +38,13 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => cache('branding_homestay_name', 'Yuri-HomeStay'),
+            'logo' => cache('branding_logo', '/images/logo.png'),
+            'favicon' => cache('branding_favicon', '/favicon.ico'),
+            'phone' => cache('branding_phone', '0852-6001-4053'),
+            'email' => cache('branding_email', 'yurihomestay@gmail.com'),
+            'address' => cache('branding_address', '54JC+JV2, Mns Mesjid, Kec. Muara Dua, Lhokseumawe, Aceh'),
+            'instagram' => cache('branding_instagram', 'https://instagram.com/yurihomestay'),
+            'github' => cache('branding_github', 'https://github.com/MuslimGunawan/HomeStay-Apps.git'),
             'auth' => [
                 'user' => $request->user(),
             ],

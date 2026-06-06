@@ -52,6 +52,16 @@ interface GuestDashboardProps {
 }
 
 export default function GuestDashboard({ bookings = [], needsPasswordChange }: GuestDashboardProps) {
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '-';
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return dateString;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [openReceiptModal, setOpenReceiptModal] = useState(false);
     const [openReviewModal, setOpenReviewModal] = useState(false);
@@ -253,11 +263,11 @@ return;
                                         <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground border-y border-white/5 py-4">
                                             <div>
                                                 <span className="block text-[10px] uppercase font-bold text-white/30">Check-in</span>
-                                                <span className="font-bold text-white mt-1 block">{new Date(booking.check_in).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</span>
+                                                <span className="font-bold text-white mt-1 block">{formatDate(booking.check_in)}</span>
                                             </div>
                                             <div>
                                                 <span className="block text-[10px] uppercase font-bold text-white/30">Check-out</span>
-                                                <span className="font-bold text-white mt-1 block">{new Date(booking.check_out).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</span>
+                                                <span className="font-bold text-white mt-1 block">{formatDate(booking.check_out)}</span>
                                             </div>
                                             <div>
                                                 <span className="block text-[10px] uppercase font-bold text-white/30">Jumlah Tamu</span>

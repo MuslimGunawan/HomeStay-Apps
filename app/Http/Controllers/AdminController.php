@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Homestay;
 use App\Models\PaymentMethod;
 use App\Models\Permission;
+use App\Models\StayComplaint;
 use App\Models\SupportTicket;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -47,6 +48,25 @@ class AdminController extends Controller
             ->limit(5)
             ->get();
 
+        // Dynamic room stats
+        $rooms = Homestay::with('bookings')->get();
+        $readyCount = 0;
+        $tersewaCount = 0;
+        $tutupCount = 0;
+        foreach ($rooms as $room) {
+            $status = $room->display_status;
+            if ($status === 'tersewa') {
+                $tersewaCount++;
+            } elseif ($status === 'tutup') {
+                $tutupCount++;
+            } else {
+                $readyCount++;
+            }
+        }
+
+        $pendingSupportCount = SupportTicket::where('status', 'pending')->count();
+        $pendingComplaintCount = StayComplaint::where('status', 'pending')->count();
+
         return Inertia::render('admin/dashboard', [
             'totalUsers' => $totalUsers,
             'totalHosts' => $totalHosts,
@@ -54,6 +74,13 @@ class AdminController extends Controller
             'totalListings' => $totalListings,
             'totalRevenue' => (float) $totalRevenue,
             'recentBookings' => $recentBookings,
+            'roomStats' => [
+                'ready' => $readyCount,
+                'tersewa' => $tersewaCount,
+                'tutup' => $tutupCount,
+            ],
+            'pendingSupportCount' => $pendingSupportCount,
+            'pendingComplaintCount' => $pendingComplaintCount,
         ]);
     }
 
@@ -63,7 +90,9 @@ class AdminController extends Controller
 
     public function users()
     {
-        $users = User::with('permissions')->get();
+        $users = User::with('permissions')
+            ->withCount(['bookings', 'homestays'])
+            ->get();
         $permissions = Permission::all();
 
         return Inertia::render('admin/users/index', [
@@ -343,6 +372,11 @@ class AdminController extends Controller
             'favicon' => cache('branding_favicon', '/favicon.ico'),
             'watermark_text' => cache('branding_watermark_text', 'HOMESTAY-APPS'),
             'copy_watermark' => cache('branding_copy_watermark', 'Salinan dari HomeStay-Apps. Pelajari lebih lanjut: '),
+            'phone' => cache('branding_phone', '0852-6001-4053'),
+            'email' => cache('branding_email', 'yurihomestay@gmail.com'),
+            'address' => cache('branding_address', '54JC+JV2, Mns Mesjid, Kec. Muara Dua, Lhokseumawe, Aceh'),
+            'instagram' => cache('branding_instagram', 'https://instagram.com/yurihomestay'),
+            'github' => cache('branding_github', 'https://github.com/MuslimGunawan/HomeStay-Apps.git'),
         ];
 
         return Inertia::render('admin/settings/branding', [
@@ -358,6 +392,11 @@ class AdminController extends Controller
             'favicon' => 'nullable|image|max:1024',
             'watermark_text' => 'required|string|max:50',
             'copy_watermark' => 'required|string',
+            'phone' => 'required|string|max:50',
+            'email' => 'required|email|max:100',
+            'address' => 'required|string',
+            'instagram' => 'required|url',
+            'github' => 'required|url',
         ]);
 
         if ($request->hasFile('logo')) {
@@ -374,6 +413,12 @@ class AdminController extends Controller
         cache(['branding_watermark_text' => $request->watermark_text], now()->addYears(10));
         cache(['branding_copy_watermark' => $request->copy_watermark], now()->addYears(10));
 
-        return back()->with('success', 'Pengaturan branding & proteksi media berhasil diperbarui.');
+        cache(['branding_phone' => $request->phone], now()->addYears(10));
+        cache(['branding_email' => $request->email], now()->addYears(10));
+        cache(['branding_address' => $request->address], now()->addYears(10));
+        cache(['branding_instagram' => $request->instagram], now()->addYears(10));
+        cache(['branding_github' => $request->github], now()->addYears(10));
+
+        return back()->with('success', 'Pengaturan branding & kontak media berhasil diperbarui.');
     }
 }

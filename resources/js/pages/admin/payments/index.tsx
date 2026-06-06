@@ -155,7 +155,7 @@ return;
                                 <th scope="col" className="px-6 py-4">Atas Nama Owner</th>
                                 <th scope="col" className="px-6 py-4 text-center">QRIS</th>
                                 <th scope="col" className="px-6 py-4 text-center">Status Keaktifan</th>
-                                <th scope="col" className="px-6 py-4 text-center">Aksi</th>
+                                <th scope="col" className="px-6 py-4 text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -200,8 +200,8 @@ return;
                                             {method.is_active ? 'Aktif' : 'Non-Aktif'}
                                         </Button>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex items-center justify-center gap-2">
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-2">
                                             <Button
                                                 onClick={() => {
                                                     setSelectedMethod(method);

@@ -63,11 +63,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/homestays/store', [HostController::class, 'store'])->name('host.homestays.store');
         Route::get('/homestays/{id}/edit', [HostController::class, 'edit'])->name('host.homestays.edit');
         Route::post('/homestays/{id}/update', [HostController::class, 'update'])->name('host.homestays.update');
+        Route::post('/homestays/{id}/status', [HostController::class, 'updateStatus'])->name('host.homestays.status');
         Route::post('/homestays/{id}/delete', [HostController::class, 'destroy'])->name('host.homestays.delete');
 
         Route::get('/reservations', [HostController::class, 'reservations'])->name('host.reservations');
         Route::post('/reservations/{id}/approve', [HostController::class, 'approveReservation'])->name('host.reservations.approve');
         Route::post('/reservations/{id}/reject', [HostController::class, 'rejectReservation'])->name('host.reservations.reject');
+        Route::post('/reservations/{id}/complete', [HostController::class, 'completeReservation'])->name('host.reservations.complete');
+        Route::post('/reservations/{id}/extend', [HostController::class, 'extendReservation'])->name('host.reservations.extend');
 
         Route::get('/active-stays', [HostController::class, 'activeStays'])->name('host.active-stays');
         Route::get('/complaints', [HostController::class, 'complaints'])->name('host.complaints');
@@ -114,12 +117,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/homestays/store', [HostController::class, 'store'])->name('admin.homestays.store');
         Route::get('/homestays/{id}/edit', [HostController::class, 'edit'])->name('admin.homestays.edit');
         Route::post('/homestays/{id}/update', [HostController::class, 'update'])->name('admin.homestays.update');
+        Route::post('/homestays/{id}/status', [HostController::class, 'updateStatus'])->name('admin.homestays.status');
         Route::post('/homestays/{id}/delete', [HostController::class, 'destroy'])->name('admin.homestays.delete');
 
         // Reservations (shared from HostController)
         Route::get('/reservations', [HostController::class, 'reservations'])->name('admin.reservations');
         Route::post('/reservations/{id}/approve', [HostController::class, 'approveReservation'])->name('admin.reservations.approve');
         Route::post('/reservations/{id}/reject', [HostController::class, 'rejectReservation'])->name('admin.reservations.reject');
+        Route::post('/reservations/{id}/complete', [HostController::class, 'completeReservation'])->name('admin.reservations.complete');
+        Route::post('/reservations/{id}/extend', [HostController::class, 'extendReservation'])->name('admin.reservations.extend');
 
         // Active Stays & Complaints (shared from HostController)
         Route::get('/active-stays', [HostController::class, 'activeStays'])->name('admin.active-stays');

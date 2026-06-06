@@ -28,6 +28,16 @@ interface StaysProps {
 }
 
 export default function ActiveStays({ stays = [] }: StaysProps) {
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '-';
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return dateString;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
     const { auth } = usePage().props as any;
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -127,7 +137,7 @@ export default function ActiveStays({ stays = [] }: StaysProps) {
                                             <span className="text-white/40">Durasi Stay</span>
                                             <span className="font-semibold text-white flex items-center gap-1">
                                                 <Calendar className="h-3.5 w-3.5 text-gold" />
-                                                {new Date(stay.check_in).toLocaleDateString('id-ID', { dateStyle: 'short' })} - {new Date(stay.check_out).toLocaleDateString('id-ID', { dateStyle: 'short' })}
+                                                {formatDate(stay.check_in)} - {formatDate(stay.check_out)}
                                             </span>
                                         </div>
                                         <div className="flex justify-between">

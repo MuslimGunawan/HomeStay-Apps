@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'name', 'slug', 'description', 'address', 'city', 'price_per_night', 'max_guests', 'latitude', 'longitude', 'status', 'category'])]
+#[Fillable(['user_id', 'name', 'slug', 'description', 'address', 'city', 'price_per_night', 'max_guests', 'status', 'category'])]
 class Homestay extends Model
 {
     /** @use HasFactory<HomestayFactory> */
@@ -27,8 +27,6 @@ class Homestay extends Model
         return [
             'price_per_night' => 'decimal:2',
             'max_guests' => 'integer',
-            'latitude' => 'float',
-            'longitude' => 'float',
         ];
     }
 
@@ -118,7 +116,7 @@ class Homestay extends Model
 
         // A room is considered 'tersewa' if it has a confirmed booking for today
         $isOccupied = $this->bookings()
-            ->whereIn('status', ['confirmed', 'completed'])
+            ->where('status', 'confirmed')
             ->where('check_in', '<=', $today)
             ->where('check_out', '>=', $today)
             ->exists();
