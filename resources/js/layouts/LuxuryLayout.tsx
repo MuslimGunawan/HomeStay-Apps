@@ -56,7 +56,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
             isDark 
                 ? 'bg-[#050505] text-[#ededec] selection:bg-[#c5a880] selection:text-black' 
                 : 'bg-[#fafafa] text-[#1a1a1a] selection:bg-[#c5a880] selection:text-white'
-        } overflow-x-hidden`}>
+        } overflow-x-clip`}>
             {/* Custom Preloader */}
             <Preloader />
 

@@ -3,14 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\Amenity;
-use App\Models\Booking;
 use App\Models\Homestay;
 use App\Models\HomestayMedia;
 use App\Models\PaymentMethod;
 use App\Models\Permission;
-use App\Models\Review;
 use App\Models\RoomMedia;
-use App\Models\SupportTicket;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -265,75 +262,6 @@ class DatabaseSeeder extends Seeder
             foreach ($hData['amenities'] as $idx) {
                 $homestay->amenities()->attach($amenityModels[$idx]->id);
             }
-
-            // 6. Create realistic past bookings & reviews for each homestay
-            $booking1 = Booking::create([
-                'user_id' => $guest->id,
-                'homestay_id' => $homestay->id,
-                'payment_method_id' => 1, // BSI
-                'check_in' => now()->subDays(10)->format('Y-m-d'),
-                'check_out' => now()->subDays(8)->format('Y-m-d'),
-                'total_guests' => 2,
-                'total_price' => $homestay->price_per_night * 2,
-                'payment_receipt_path' => 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=MockReceiptImage',
-                'paid_at' => now()->subDays(10),
-                'status' => 'completed',
-            ]);
-
-            Review::create([
-                'booking_id' => $booking1->id,
-                'user_id' => $guest->id,
-                'homestay_id' => $homestay->id,
-                'rating' => 5,
-                'comment' => 'Tempat yang luar biasa bersih, host sangat ramah dan responsif. Semua fasilitas berfungsi dengan baik. Sangat recommended!',
-            ]);
-
-            // Add another booking in pending state
-            Booking::create([
-                'user_id' => $guest->id,
-                'homestay_id' => $homestay->id,
-                'payment_method_id' => 3, // DANA
-                'check_in' => now()->addDays(5)->format('Y-m-d'),
-                'check_out' => now()->addDays(7)->format('Y-m-d'),
-                'total_guests' => 3,
-                'total_price' => $homestay->price_per_night * 2,
-                'payment_receipt_path' => 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=MockReceiptImage',
-                'paid_at' => now(),
-                'status' => 'pending_approval',
-            ]);
-
-            // Add an active confirmed booking for Executive Glass Suite to make it occupied ("Tersewa") today
-            if ($homestay->name === 'Executive Glass Suite') {
-                Booking::create([
-                    'user_id' => $guest->id,
-                    'homestay_id' => $homestay->id,
-                    'payment_method_id' => 1, // BSI
-                    'check_in' => now()->subDays(1)->format('Y-m-d'),
-                    'check_out' => now()->addDays(2)->format('Y-m-d'),
-                    'total_guests' => 2,
-                    'total_price' => $homestay->price_per_night * 3,
-                    'payment_receipt_path' => 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=MockReceiptImage',
-                    'paid_at' => now()->subDays(1),
-                    'status' => 'confirmed',
-                ]);
-            }
         }
-
-        // 7. Seed support tickets
-        SupportTicket::create([
-            'name' => 'Budi Prasetyo',
-            'email' => 'budi@gmail.com',
-            'subject' => 'Tanya ketersediaan untuk rombongan besar',
-            'message' => 'Halo Admin, apakah ada kamar di Yuri Homestay yang bisa menampung sekitar 10 orang sekaligus dalam satu lantai? Terima kasih.',
-            'status' => 'pending',
-        ]);
-
-        SupportTicket::create([
-            'name' => 'Sarah Wijaya',
-            'email' => 'sarah@gmail.com',
-            'subject' => 'Masalah refund pembatalan',
-            'message' => 'Kemarin saya melakukan pembatalan untuk pesanan Deluxe Premium Room, namun dana refund belum masuk ke rekening saya. Mohon bantuannya.',
-            'status' => 'resolved',
-        ]);
     }
 }
