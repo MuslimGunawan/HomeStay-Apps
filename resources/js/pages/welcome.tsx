@@ -386,10 +386,7 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
 
     // 2. DESKTOP CINEMATIC SCROLLYTELLING STUFF
     const containerRef = useRef<HTMLDivElement>(null);
-    const { scrollYProgress: rawScrollProgress } = useScroll({
-        target: containerRef,
-        offset: ["start start", "end end"]
-    });
+    const { scrollYProgress: rawScrollProgress } = useScroll();
 
     // Smoothed scroll progression track using a high-frequency elastic spring
     const scrollSpring = useSpring(rawScrollProgress, {
@@ -402,7 +399,7 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
     const [currentProgress, setCurrentProgress] = useState(0);
     useEffect(() => {
         if (!isDesktop) return;
-        return scrollSpring.onChange(v => {
+        return scrollSpring.on("change", v => {
             setCurrentProgress(v);
         });
     }, [scrollSpring, isDesktop]);

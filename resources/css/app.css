@@ -148,7 +148,7 @@
     body {
         @apply bg-background text-foreground font-sans antialiased selection:bg-gold selection:text-deep-black;
         scroll-behavior: smooth;
-        overflow-x: hidden;
+        overflow-x: clip;
     }
 
     h1, h2, h3, h4, h5, h6 {
