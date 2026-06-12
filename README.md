@@ -1,6 +1,6 @@
 # Yuri Homestay Lhokseumawe (HomeStay-Apps)
 
-HomeStay-Apps adalah platform pemesanan kamar homestay/penginapan berbasis web modern. Aplikasi ini dirancang menggunakan **Laravel 13**, **Inertia.js v3**, **React 19**, **Tailwind CSS v4**, dan **SQLite** untuk memberikan pengalaman Single Page Application (SPA) yang sangat cepat, interaktif, dan berestetika mewah (*glassmorphism & gold accent*).
+HomeStay-Apps adalah platform pemesanan kamar homestay/penginapan berbasis web modern. Aplikasi ini dirancang menggunakan **Laravel 13**, **Inertia.js v3**, **React 19**, **Tailwind CSS v4**, dan **MySQL** untuk memberikan pengalaman Single Page Application (SPA) yang sangat cepat, interaktif, dan berestetika mewah (*glassmorphism & gold accent*).
 
 ---
 
@@ -8,7 +8,7 @@ HomeStay-Apps adalah platform pemesanan kamar homestay/penginapan berbasis web m
 
 - **Backend:** Laravel 13 (PHP 8.3+), Fortify (Authentication).
 - **Frontend:** React 19, Inertia.js v3 (dengan XHR built-in client, deferred props, polling), Tailwind CSS v4.
-- **Database:** SQLite (Sangat portabel & ringan untuk demo di laptop penguji).
+- **Database:** MySQL (Database relasional handal untuk manajemen transaksi penginapan).
 - **Fitur Proteksi Media:** 
   - Penempelan watermark transparan secara otomatis di backend menggunakan GD Library.
   - Penonaktifan klik kanan (`contextmenu`) dan penyeretan (`draggable="false"`) pada galeri foto.
@@ -59,7 +59,7 @@ cd HomeStay-Apps
    ```powershell
    ./setup.ps1
    ```
-   *Skrip ini otomatis menginstal dependensi Composer, menyalin file konfigurasi `.env`, membuat database SQLite, menjalankan migrasi & seeder data sampel mewah, menginstal dependensi NPM, membuat link penyimpanan berkas (`storage:link`), serta mengompilasi aset statis frontend.*
+    *Skrip ini otomatis menginstal dependensi Composer, menyalin file konfigurasi `.env`, memeriksa dan membuat database MySQL secara otomatis, menjalankan migrasi & seeder data sampel mewah, menginstal dependensi NPM, membuat link penyimpanan berkas (`storage:link`), serta mengompilasi aset statis frontend.*
 
 ### Langkah 3: Jalankan Aplikasi
 Setelah setup selesai dengan sukses, jalankan perintah berikut di PowerShell untuk membuka server lokal dan browser Anda secara otomatis:
@@ -86,11 +86,13 @@ Jika Anda ingin menginstal secara manual tanpa skrip PowerShell, ikuti langkah-l
    ```bash
    php artisan key:generate
    ```
-4. **Buat File Database SQLite:**
-   Buat file kosong bernama `database.sqlite` di dalam direktori `database/`.
-   - Di Windows (CMD): `type NUL > database\database.sqlite`
-   - Di PowerShell: `New-Item -ItemType File -Path database/database.sqlite`
-   - Di Git Bash / Linux: `touch database/database.sqlite`
+4. **Buat Database MySQL:**
+   - Pastikan server MySQL Anda aktif (misalnya via Laragon atau XAMPP).
+   - Buat database baru bernama `homestay_apps` melalui MySQL client pilihan Anda (misalnya HeidiSQL, phpMyAdmin, atau command line):
+     ```sql
+     CREATE DATABASE homestay_apps CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+     ```
+   - Sesuaikan konfigurasi database Anda di file `.env` (isi `DB_DATABASE=homestay_apps`, `DB_USERNAME=root`, dan `DB_PASSWORD=`).
 5. **Jalankan Migrasi & Seeder Database:**
    ```bash
    php artisan migrate:fresh --seed
@@ -132,3 +134,51 @@ Untuk memudahkan pengujian fungsionalitas multi-role, database seeder kami telah
 4. **Persetujuan Host:** Pemilik homestay (Host) atau Admin memverifikasi bukti transfer dan menyetujui reservasi agar berstatus `confirmed` (terkonfirmasi).
 5. **Pemantauan Kamar & Komunikasi:** Tamu yang sedang menginap dapat mengirim keluhan/aduan langsung dari dasbor tamu ke pemilik homestay. Tamu juga dapat menghubungi WhatsApp Host melalui tombol dinamis yang disediakan.
 6. **Sistem Ulasan (Review):** Setelah waktu tinggal selesai, tamu dapat memberikan nilai rating (1-5 bintang) dan komentar ulasan yang akan tampil secara publik di halaman detail kamar dan landing page.
+
+---
+
+## 📊 Skema Database & Relasi
+
+Aplikasi ini menggunakan database **MySQL** dengan skema relasi terstruktur sebagai berikut:
+
+### 1. Tabel Utama & Kolom Penting
+
+- **`users`**: Menyimpan data akun pengguna sistem.
+  - `role`: Enum (`admin`, `host`, `guest`) yang mendefinisikan peran pengguna.
+  - `phone`: Nomor telepon pengguna untuk keperluan koordinasi/komunikasi.
+  - `avatar`: Path file foto profil pengguna.
+  - Serta kolom bawaan Fortify untuk otentikasi (2FA, passkeys).
+- **`homestays`**: Menyimpan data unit penginapan/homestay yang didaftarkan oleh Host.
+  - `user_id`: Kunci tamu (foreign key) ke pemilik homestay (Host).
+  - `price_per_night`: Harga sewa per malam (Decimal).
+  - `max_guests`: Kapasitas maksimal tamu.
+  - `status`: Status ketersediaan kamar (`active`, `inactive`).
+  - `category`: Kategori homestay (Deluxe, Executive, Heritage, Family).
+- **`amenities`**: Fasilitas global yang dapat ditautkan ke homestay (misal: Wi-Fi, AC, Kolam Renang).
+  - `icon`: Menyimpan emoji atau nama icon visual pendukung.
+- **`payment_methods`**: Metode pembayaran transfer bank/QRIS yang dikelola Super Admin.
+  - `type`: Jenis pembayaran (`bank`, `ewallet`, `qris`).
+  - `account_number` & `account_name`: Rekening tujuan transfer.
+- **`bookings`**: Transaksi pemesanan kamar oleh Tamu (Guest).
+  - `status`: Alur status booking (`pending_payment`, `pending_approval`, `confirmed`, `completed`, `cancelled`).
+  - `payment_receipt_path`: File bukti transfer yang diunggah oleh Tamu.
+- **`reviews`**: Penilaian rating (1-5 bintang) dan komentar ulasan dari Tamu pasca check-out.
+- **`stay_complaints`**: Sistem pengaduan keluhan Tamu langsung ke Host selama masa menginap.
+- **`support_tickets`**: Layanan aduan/pertanyaan pengguna ke Super Admin.
+- **`homestay_media` & `room_media`**: Menyimpan file foto/video eksterior dan interior homestay yang dilindungi watermark dinamis di backend.
+
+### 2. Diagram Hubungan Relasi (Relationship Mapping)
+
+Pemetaan relasi model Eloquent pada backend didefinisikan sebagai berikut:
+
+- **`User` (Host)** ➔ **Has Many** ➔ `Homestay` *(Satu host mengelola banyak penginapan)*
+- **`User` (Guest)** ➔ **Has Many** ➔ `Booking` / `Review` / `SupportTicket` *(Satu tamu memiliki banyak riwayat transaksi & ulasan)*
+- **`Homestay`** ➔ **Belongs To** ➔ `User` (Host)
+- **`Homestay`** ➔ **Has Many** ➔ `Booking` / `Review` / `HomestayMedia` / `RoomMedia`
+- **`Homestay`** ➔ **Belongs To Many** ➔ `Amenity` *(Hubungan banyak-ke-banyak via tabel pivot `amenity_homestay`)*
+- **`Booking`** ➔ **Belongs To** ➔ `User` (Guest) & `Homestay` & `PaymentMethod`
+- **`Booking`** ➔ **Has Many** ➔ `StayComplaint`
+- **`Review`** ➔ **Belongs To** ➔ `User` (Guest) & `Homestay`
+- **`StayComplaint`** ➔ **Belongs To** ➔ `Booking` & `User` (Guest)
+- **`User`** ➔ **Belongs To Many** ➔ `Permission` *(Hubungan banyak-ke-banyak via tabel pivot `permission_user` untuk mengontrol hak akses Host)*
+

@@ -79,14 +79,50 @@ if (-not (Test-Path .env)) {
 Write-Host "`n[4/7] Membuat Application Key..." -ForegroundColor Cyan
 php artisan key:generate --no-interaction
 
-# 5. Database Setup (SQLite)
-Write-Host "`n[5/7] Menyiapkan Database SQLite..." -ForegroundColor Cyan
-$dbPath = "database/database.sqlite"
-if (-not (Test-Path $dbPath)) {
-    New-Item -ItemType File -Path $dbPath -Force | Out-Null
-    Write-Host "✔ File database SQLite dibuat." -ForegroundColor Green
+# 5. Database Setup
+Write-Host "`n[5/7] Menyiapkan Database..." -ForegroundColor Cyan
+
+# Parse .env to get DB settings
+$envContent = Get-Content .env
+$dbConnection = "sqlite"
+$dbDatabase = "database.sqlite"
+$dbHost = "127.0.0.1"
+$dbPort = "3306"
+$dbUsername = "root"
+$dbPassword = ""
+
+foreach ($line in $envContent) {
+    if ($line -match "^DB_CONNECTION=(.*)$") { $dbConnection = $Matches[1].Trim() }
+    if ($line -match "^DB_DATABASE=(.*)$") { $dbDatabase = $Matches[1].Trim() }
+    if ($line -match "^DB_HOST=(.*)$") { $dbHost = $Matches[1].Trim() }
+    if ($line -match "^DB_PORT=(.*)$") { $dbPort = $Matches[1].Trim() }
+    if ($line -match "^DB_USERNAME=(.*)$") { $dbUsername = $Matches[1].Trim() }
+    if ($line -match "^DB_PASSWORD=(.*)$") { $dbPassword = $Matches[1].Trim() }
+}
+
+if ($dbConnection -eq "mysql") {
+    Write-Host "Menghubungkan ke MySQL ($dbHost:$dbPort) untuk memeriksa/membuat database '$dbDatabase'..." -ForegroundColor Cyan
+    # Run inline PHP script to create MySQL database
+    php -r "
+    try {
+        `$pdo = new PDO('mysql:host=$dbHost;port=$dbPort', '$dbUsername', '$dbPassword');
+        `$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        `$pdo->exec('CREATE DATABASE IF NOT EXISTS \`$dbDatabase\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+        echo '✔ Database MySQL \`$dbDatabase\` siap.\n';
+    } catch (Exception `$e) {
+        echo 'Peringatan: Gagal membuat database MySQL secara otomatis: ' . `$e->getMessage() . '\n';
+        echo 'Pastikan server MySQL Anda aktif (misal Laragon/XAMPP) dan buat database \`$dbDatabase\` secara manual.\n';
+    }
+    "
 } else {
-    Write-Host "✔ File database SQLite sudah ada." -ForegroundColor Yellow
+    Write-Host "Menyiapkan Database SQLite..." -ForegroundColor Cyan
+    $dbPath = "database/$dbDatabase"
+    if (-not (Test-Path $dbPath)) {
+        New-Item -ItemType File -Path $dbPath -Force | Out-Null
+        Write-Host "✔ File database SQLite dibuat." -ForegroundColor Green
+    } else {
+        Write-Host "✔ File database SQLite sudah ada." -ForegroundColor Yellow
+    }
 }
 
 Write-Host "Menjalankan migrasi dan seeder data..." -ForegroundColor Cyan

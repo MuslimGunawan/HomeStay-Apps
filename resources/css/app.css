@@ -151,7 +151,12 @@
         overflow-x: clip;
     }
 
-    h1, h2, h3, h4, h5, h6 {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
         font-family: 'Outfit', 'Inter', sans-serif;
     }
 
@@ -198,9 +203,12 @@
 
     /* Safeguard for Touch Devices / HP Mobile */
     @media (pointer: coarse) {
-        .custom-cursor-dot, .custom-cursor-ring {
+
+        .custom-cursor-dot,
+        .custom-cursor-ring {
             display: none !important;
         }
+
         body {
             cursor: auto !important;
         }
