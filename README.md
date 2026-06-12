@@ -214,6 +214,7 @@ erDiagram
         string icon
     }
     AMENITY_HOMESTAY {
+        bigint id PK
         bigint amenity_id FK
         bigint homestay_id FK
     }
@@ -223,11 +224,12 @@ erDiagram
         string type
         string account_number
         string account_name
-        string logo_path
+        string qris_image_path
         boolean is_active
     }
     REVIEWS {
         bigint id PK
+        bigint booking_id FK
         bigint user_id FK
         bigint homestay_id FK
         integer rating
@@ -236,14 +238,15 @@ erDiagram
     STAY_COMPLAINTS {
         bigint id PK
         bigint booking_id FK
-        bigint user_id FK
-        string title
-        text description
+        bigint guest_id FK
+        bigint homestay_id FK
+        text message
         string status
     }
     SUPPORT_TICKETS {
         bigint id PK
-        bigint user_id FK
+        string name
+        string email
         string subject
         text message
         string status
@@ -252,6 +255,9 @@ erDiagram
         bigint id PK
         bigint homestay_id FK
         string file_path
+        string type
+        string category
+        string custom_category
         boolean is_primary
     }
     ROOM_MEDIA {
@@ -267,9 +273,9 @@ erDiagram
         bigint id PK
         string name
         string slug UK
-        string description
     }
     PERMISSION_USER {
+        bigint id PK
         bigint permission_id FK
         bigint user_id FK
     }
@@ -277,7 +283,7 @@ erDiagram
     USERS ||--o{ HOMESTAYS : "hosts"
     USERS ||--o{ BOOKINGS : "books"
     USERS ||--o{ REVIEWS : "reviews"
-    USERS ||--o{ SUPPORT_TICKETS : "creates"
+    USERS ||--o{ STAY_COMPLAINTS : "files_complaints"
     USERS ||--o{ PERMISSION_USER : "has"
     PERMISSIONS ||--o{ PERMISSION_USER : "grants"
     HOMESTAYS ||--o{ BOOKINGS : "has_bookings"
@@ -288,6 +294,7 @@ erDiagram
     AMENITIES ||--o{ AMENITY_HOMESTAY : "belongs_to"
     PAYMENT_METHODS ||--o{ BOOKINGS : "accepts"
     BOOKINGS ||--o{ STAY_COMPLAINTS : "has_complaints"
+    BOOKINGS ||--o{ REVIEWS : "has_review"
 ```
 
 ### 3. Pemetaan Hubungan Model Eloquent (Backend)
@@ -295,13 +302,14 @@ erDiagram
 Secara programatik di dalam kode Laravel, relasi tersebut dideklarasikan sebagai berikut:
 
 - **`User` (Host)** ➔ **Has Many** ➔ `Homestay` *(Satu host mengelola banyak penginapan)*
-- **`User` (Guest)** ➔ **Has Many** ➔ `Booking` / `Review` / `SupportTicket` *(Satu tamu memiliki banyak riwayat transaksi & ulasan)*
+- **`User` (Guest)** ➔ **Has Many** ➔ `Booking` / `Review` *(Satu tamu memiliki banyak riwayat transaksi & ulasan)*
 - **`Homestay`** ➔ **Belongs To** ➔ `User` (Host)
-- **`Homestay`** ➔ **Has Many** ➔ `Booking` / `Review` / `HomestayMedia` / `RoomMedia`
+- **`Homestay`** ➔ **Has Many** ➔ `Booking` / `Review` / `HomestayMedia` / `RoomMedia` / `StayComplaint`
 - **`Homestay`** ➔ **Belongs To Many** ➔ `Amenity` *(Hubungan banyak-ke-banyak via tabel pivot `amenity_homestay`)*
 - **`Booking`** ➔ **Belongs To** ➔ `User` (Guest) & `Homestay` & `PaymentMethod`
 - **`Booking`** ➔ **Has Many** ➔ `StayComplaint`
-- **`Review`** ➔ **Belongs To** ➔ `User` (Guest) & `Homestay`
-- **`StayComplaint`** ➔ **Belongs To** ➔ `Booking` & `User` (Guest)
+- **`Booking`** ➔ **Has One** ➔ `Review`
+- **`Review`** ➔ **Belongs To** ➔ `User` (Guest) & `Homestay` & `Booking`
+- **`StayComplaint`** ➔ **Belongs To** ➔ `Booking` & `User` (Guest) & `Homestay`
 - **`User`** ➔ **Belongs To Many** ➔ `Permission` *(Hubungan banyak-ke-banyak via tabel pivot `permission_user` untuk mengontrol hak akses Host)*
 
