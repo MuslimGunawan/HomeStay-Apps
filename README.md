@@ -295,6 +295,7 @@ erDiagram
     PAYMENT_METHODS ||--o{ BOOKINGS : "accepts"
     BOOKINGS ||--o{ STAY_COMPLAINTS : "has_complaints"
     BOOKINGS ||--o{ REVIEWS : "has_review"
+    HOMESTAYS ||--o{ STAY_COMPLAINTS : "receives_complaints"
 ```
 
 ### 3. Pemetaan Hubungan Model Eloquent (Backend)
