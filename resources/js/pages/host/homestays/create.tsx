@@ -13,9 +13,9 @@ import {
     ChevronRight,
     Compass
 } from 'lucide-react';
-import DragDropUpload from '@/components/DragDropUpload';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import DragDropUpload from '@/components/DragDropUpload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';

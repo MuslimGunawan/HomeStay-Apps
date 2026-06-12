@@ -135,10 +135,12 @@ function InteractiveCalendar({ bookedDates = [], checkIn, checkOut, onChange }: 
 
                 while (curr <= end) {
                     const tempStr = curr.toISOString().split('T')[0];
+
                     if (bookedDates.includes(tempStr)) {
                         hasBlockedBetween = true;
                         break;
                     }
+
                     curr.setDate(curr.getDate() + 1);
                 }
 
@@ -161,6 +163,7 @@ function InteractiveCalendar({ bookedDates = [], checkIn, checkOut, onChange }: 
         if (!checkIn || !checkOut) {
             return false;
         }
+
         return dateStr > checkIn && dateStr < checkOut;
     };
 
@@ -207,6 +210,7 @@ function InteractiveCalendar({ bookedDates = [], checkIn, checkOut, onChange }: 
                     const disabled = dayObj.isPast || dayObj.isBlocked;
 
                     let bgClass = "hover:bg-white/5 text-white/80";
+
                     if (disabled) {
                         bgClass = dayObj.isBlocked 
                             ? "bg-rose-500/10 text-rose-400/50 line-through cursor-not-allowed border border-rose-500/10" 
@@ -252,12 +256,20 @@ function InteractiveCalendar({ bookedDates = [], checkIn, checkOut, onChange }: 
 
 export default function Show({ homestay, bookedDates = [] }: ShowProps) {
     const formatDate = (dateString: string) => {
-        if (!dateString) return '-';
+        if (!dateString) {
+return '-';
+}
+
         const d = new Date(dateString);
-        if (isNaN(d.getTime())) return dateString;
+
+        if (isNaN(d.getTime())) {
+return dateString;
+}
+
         const day = String(d.getDate()).padStart(2, '0');
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const year = d.getFullYear();
+
         return `${day}/${month}/${year}`;
     };
 

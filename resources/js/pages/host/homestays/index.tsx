@@ -36,8 +36,14 @@ export default function Homestays({ homestays = [] }: HomestaysProps) {
     const [statusProcessing, setStatusProcessing] = useState(false);
 
     const getNormalizedStatus = (status: string) => {
-        if (status === 'active' || status === 'aktif') return 'aktif';
-        if (status === 'inactive' || status === 'tutup') return 'tutup';
+        if (status === 'active' || status === 'aktif') {
+return 'aktif';
+}
+
+        if (status === 'inactive' || status === 'tutup') {
+return 'tutup';
+}
+
         return status; // tersewa
     };
 
@@ -48,7 +54,10 @@ export default function Homestays({ homestays = [] }: HomestaysProps) {
     };
 
     const handleStatusConfirm = () => {
-        if (!statusTargetHomestay) return;
+        if (!statusTargetHomestay) {
+return;
+}
+
         setStatusProcessing(true);
         router.post(route(`${prefix}.homestays.status` as any, { id: statusTargetHomestay.id }), {
             status: targetStatus

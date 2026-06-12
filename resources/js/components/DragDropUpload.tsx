@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
 import { Upload, File, Image, Film, X } from 'lucide-react';
+import { useState, useRef } from 'react';
 
 interface DragDropUploadProps {
     onChange: (file: File | null) => void;
@@ -24,6 +24,7 @@ export default function DragDropUpload({
     const handleDrag = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
+
         if (e.type === "dragenter" || e.type === "dragover") {
             setDragActive(true);
         } else if (e.type === "dragleave") {
@@ -38,22 +39,29 @@ export default function DragDropUpload({
 
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             const file = e.dataTransfer.files[0];
+
             if (file.size > maxSizeMB * 1024 * 1024) {
                 alert(`Ukuran file terlalu besar! Maksimal ${maxSizeMB}MB.`);
+
                 return;
             }
+
             onChange(file);
         }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
+
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
+
             if (file.size > maxSizeMB * 1024 * 1024) {
                 alert(`Ukuran file terlalu besar! Maksimal ${maxSizeMB}MB.`);
+
                 return;
             }
+
             onChange(file);
         }
     };
@@ -71,6 +79,7 @@ export default function DragDropUpload({
         if (typeof val === 'string') {
             return val.match(/\.(jpeg|jpg|gif|png|webp)/i) != null;
         }
+
         return val instanceof File && val.type.startsWith('image/');
     };
 
@@ -78,12 +87,19 @@ export default function DragDropUpload({
         if (typeof val === 'string') {
             return val.match(/\.(mp4|webm|ogg|mov)/i) != null;
         }
+
         return val instanceof File && val.type.startsWith('video/');
     };
 
     const getPreviewUrl = () => {
-        if (!value) return null;
-        if (typeof value === 'string') return value;
+        if (!value) {
+return null;
+}
+
+        if (typeof value === 'string') {
+return value;
+}
+
         return URL.createObjectURL(value);
     };
 

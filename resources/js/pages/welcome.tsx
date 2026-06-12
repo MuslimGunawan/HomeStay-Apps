@@ -1,9 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Calendar, Users, Star, ArrowRight, Compass, Shield, Sparkles, HelpCircle, ChevronDown, Hotel, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import { Search, MapPin, Users, Star, ArrowRight, Compass, Shield, HelpCircle, ChevronDown, Hotel, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import LuxuryLayout from '@/layouts/LuxuryLayout';
 import { useAppearance } from '@/hooks/use-appearance';
+import LuxuryLayout from '@/layouts/LuxuryLayout';
 
 interface Media {
     id: number;
@@ -141,7 +141,10 @@ function HomestayCard({ homestay, idx, isDark, isActive = true, onFocus }: Homes
     const cardScale = useSpring(useMotionValue(1), cardSpringConfig);
 
     const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!isActive) return;
+        if (!isActive) {
+return;
+}
+
         const rect = e.currentTarget.getBoundingClientRect();
         const valX = (e.clientX - rect.left) / rect.width;
         const valY = (e.clientY - rect.top) / rect.height;
@@ -159,7 +162,7 @@ function HomestayCard({ homestay, idx, isDark, isActive = true, onFocus }: Homes
     const formattedPrice = () => {
         try {
             return parseFloat(homestay.price_per_night as any).toLocaleString('id-ID');
-        } catch (e) {
+        } catch {
             return homestay.price_per_night;
         }
     };
@@ -284,12 +287,20 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
     const siteName = name || 'Yuri-HomeStay';
 
     const formatDate = (dateString: string) => {
-        if (!dateString) return '-';
+        if (!dateString) {
+return '-';
+}
+
         const d = new Date(dateString);
-        if (isNaN(d.getTime())) return dateString;
+
+        if (isNaN(d.getTime())) {
+return dateString;
+}
+
         const day = String(d.getDate()).padStart(2, '0');
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const year = d.getFullYear();
+
         return `${day}/${month}/${year}`;
     };
 
@@ -336,13 +347,19 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
     const [isDesktop, setIsDesktop] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
         const checkViewport = () => {
             setIsDesktop(window.innerWidth >= 1024);
         };
-        checkViewport();
+        const timer = setTimeout(() => {
+            setMounted(true);
+            checkViewport();
+        }, 0);
         window.addEventListener('resize', checkViewport);
-        return () => window.removeEventListener('resize', checkViewport);
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', checkViewport);
+        };
     }, []);
 
     // 1. MOBILE / FALLBACK / SSR SCROLL INTERACTIVE STUFF
@@ -398,18 +415,36 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
 
     const [currentProgress, setCurrentProgress] = useState(0);
     useEffect(() => {
-        if (!isDesktop) return;
+        if (!isDesktop) {
+return;
+}
+
         return scrollSpring.on("change", v => {
             setCurrentProgress(v);
         });
     }, [scrollSpring, isDesktop]);
 
     const getActiveIndex = () => {
-        if (currentProgress < 0.16) return 0;
-        if (currentProgress < 0.32) return 1;
-        if (currentProgress < 0.48) return 2;
-        if (currentProgress < 0.64) return 3;
-        if (currentProgress < 0.80) return 4;
+        if (currentProgress < 0.16) {
+return 0;
+}
+
+        if (currentProgress < 0.32) {
+return 1;
+}
+
+        if (currentProgress < 0.48) {
+return 2;
+}
+
+        if (currentProgress < 0.64) {
+return 3;
+}
+
+        if (currentProgress < 0.80) {
+return 4;
+}
+
         return 5;
     };
     const activeIdx = getActiveIndex();
@@ -439,7 +474,6 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
     const filter6 = useTransform(scrollSpring, [0.76, 0.84], ["blur(8px)", "blur(0px)"]);
 
     const opacities = [opacity1, opacity2, opacity3, opacity4, opacity5, opacity6];
-    const yOffsets = [yOffset1, yOffset2, yOffset3, yOffset4, yOffset5, yOffset6];
 
     // Background panning camera animations (smoothed with spring track)
     const bgScaleDesktop = useTransform(scrollSpring, [0, 1], [1.05, 1.25]);
@@ -466,7 +500,11 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
 
     const scrollToSection = (index: number) => {
         const container = containerRef.current;
-        if (!container) return;
+
+        if (!container) {
+return;
+}
+
         const rect = container.getBoundingClientRect();
         const totalScroll = container.scrollHeight - window.innerHeight;
         const targets = [0, 0.24, 0.40, 0.56, 0.72, 0.92];
@@ -525,6 +563,7 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
                             
                             {sections.map((sect, idx) => {
                                 const isActive = idx === activeIdx;
+
                                 return (
                                     <button
                                         key={idx}
@@ -797,7 +836,9 @@ export default function Welcome({ featuredHomestays = [], reviews = [] }: Welcom
                                         const isActive = idx === sliderIndex;
                                         const absDiff = Math.abs(diff);
                                         
-                                        if (absDiff > 2) return null;
+                                        if (absDiff > 2) {
+return null;
+}
 
                                         return (
                                             <motion.div

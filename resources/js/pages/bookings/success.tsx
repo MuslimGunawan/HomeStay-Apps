@@ -2,8 +2,8 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { Clipboard, Check, Eye, EyeOff, UploadCloud, FileText, CheckCircle, CreditCard, AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import LuxuryLayout from '@/layouts/LuxuryLayout';
 import DragDropUpload from '@/components/DragDropUpload';
+import LuxuryLayout from '@/layouts/LuxuryLayout';
 
 interface Booking {
     id: number;

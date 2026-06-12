@@ -60,12 +60,20 @@ export default function Reservations({ bookings = [] }: ReservationsProps) {
     const [actionProcessing, setActionProcessing] = useState(false);
 
     const formatDate = (dateString: string) => {
-        if (!dateString) return '-';
+        if (!dateString) {
+return '-';
+}
+
         const d = new Date(dateString);
-        if (isNaN(d.getTime())) return dateString;
+
+        if (isNaN(d.getTime())) {
+return dateString;
+}
+
         const day = String(d.getDate()).padStart(2, '0');
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const year = d.getFullYear();
+
         return `${day}/${month}/${year}`;
     };
 
@@ -138,6 +146,7 @@ export default function Reservations({ bookings = [] }: ReservationsProps) {
     const handleExtend = () => {
         if (!selectedBooking || !extendDate) {
             toast.error('Silakan pilih tanggal check-out baru.');
+
             return;
         }
 
