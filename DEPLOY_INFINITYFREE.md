@@ -21,82 +21,71 @@ Sebelum mengunggah file ke FTP InfinityFree, Anda harus meng-compile file asset 
 
 ## 2. Struktur Direktori FTP (Penting demi Keamanan!)
 
-Jangan mengunggah seluruh proyek Laravel Anda langsung ke dalam folder `htdocs`. Hal ini dapat mengekspos file konfigurasi rahasia Anda (seperti `.env`) ke publik. Kita harus memisahkan folder publik (`public/`) dengan folder kode inti Laravel Anda demi keamanan.
+InfinityFree menerapkan kebijakan keamanan ketat di mana **semua file yang diunggah di luar folder `htdocs` akan dihapus secara otomatis**. Oleh karena itu, seluruh file proyek Laravel Anda (termasuk folder `vendor`, `app`, `config`, `.env`, dll.) **harus diletakkan di dalam folder `htdocs/`**.
 
-### Perbandingan Struktur Folder (Lokal vs Server FTP)
+Berikut adalah struktur folder yang benar di dalam folder `htdocs` FTP Anda:
 
-#### 📂 DI KOMPUTER LOKAL ANDA (Laragon):
-```
-c:\laragon\www\HomeStay-Apps\
-├── app/
-├── bootstrap/
-├── config/
-├── database/
-├── resources/
-├── routes/
-├── storage/
-├── vendor/
-├── ... (file lainnya)
-│
-└── public/  <-- (HANYA ISI FOLDER INI YANG DIUNGGAH KE HTDOCS)
-    ├── build/
-    ├── images/
-    ├── .htaccess
-    ├── favicon.ico
-    ├── index.php
-    └── robots.txt
-```
-
-#### 🌐 DI SERVER FTP INFINITYFREE (Target Akhir):
 ```
 / (Akar Akun FTP Anda)
-├── app/                  <-- Diunggah dari luar folder public lokal
-├── bootstrap/            <-- Diunggah dari luar folder public lokal
-├── config/               <-- Diunggah dari luar folder public lokal
-├── database/             <-- Diunggah dari luar folder public lokal
-├── resources/            <-- Diunggah dari luar folder public lokal
-├── routes/               <-- Diunggah dari luar folder public lokal
-├── storage/              <-- Diunggah dari luar folder public lokal
-├── vendor/               <-- Diunggah dari luar folder public lokal
-├── artisan               <-- Diunggah dari luar folder public lokal
-├── .env                  <-- Buat baru langsung di FTP (konfigurasi produksi)
-│
-└── htdocs/               <-- (Folder bawaan dari InfinityFree)
-    ├── build/            <-- Diunggah dari DALAM folder public/ lokal
-    ├── images/           <-- Diunggah dari DALAM folder public/ lokal
-    ├── .htaccess         <-- Diunggah dari DALAM folder public/ lokal
-    ├── favicon.ico       <-- Diunggah dari DALAM folder public/ lokal
-    ├── index.php         <-- Diunggah dari DALAM folder public/ lokal
-    └── robots.txt        <-- Diunggah dari DALAM folder public/ lokal
+└── htdocs/ (Folder web root bawaan dari InfinityFree)
+    ├── .htaccess            <-- File .htaccess Utama (Lihat Bagian 3)
+    ├── .env                 <-- File konfigurasi produksi Laravel Anda
+    ├── artisan
+    ├── app/
+    ├── bootstrap/
+    ├── config/
+    ├── database/
+    ├── resources/
+    ├── routes/
+    ├── storage/
+    ├── vendor/
+    ├── ... (Semua file/folder Laravel lainnya)
+    │
+    └── public/              <-- Tetap dipertahankan di dalam htdocs
+        ├── build/           <-- Folder kompilasi frontend (CSS/JS)
+        ├── images/          <-- Folder aset gambar
+        ├── .htaccess        <-- File .htaccess bawaan Laravel
+        ├── favicon.ico
+        ├── index.php
+        └── robots.txt
 ```
 
-### Langkah Praktis Pengunggahan via FileZilla:
-1. **Unggah Folder Inti (Luar `htdocs`):**
-   - Di panel kanan (Server FTP), pastikan Anda berada di direktori akar `/` (sejajar dengan folder `htdocs`).
-   - Di panel kiri (Komputer Lokal), blok semua file dan folder proyek Anda **KECUALI folder `public`**.
-   - Seret (drag & drop) semuanya ke panel kanan untuk mulai mengunggah.
-2. **Unggah File Publik (Ke dalam `htdocs`):**
-   - Di panel kiri (Komputer Lokal), **masuklah ke dalam folder `public/`**.
-   - Di panel kanan (Server FTP), **masuklah ke dalam folder `htdocs/`**.
-   - Blok seluruh isi di dalam folder `public/` lokal Anda, lalu seret ke panel kanan (ke dalam `htdocs/`).
+### Langkah Upload Menggunakan FileZilla:
+1. Jalankan `npm run build` di terminal lokal Anda terlebih dahulu untuk memastikan asset terkompilasi.
+2. Hubungkan FileZilla ke akun FTP InfinityFree Anda.
+3. Buka folder **`htdocs/`** di panel sebelah kanan (Server FTP).
+4. Blok seluruh folder dan file di dalam direktori proyek lokal Anda (termasuk folder `public/`, `vendor/`, dll.), lalu seret semuanya langsung ke dalam folder **`htdocs/`** di panel kanan.
+5. Tunggu hingga semua file berhasil ditransfer (tidak boleh ada file yang diletakkan di luar `htdocs`).
 
 ---
 
-## 3. Penyesuaian File `htdocs/index.php`
+## 3. File `.htaccess` di Root `htdocs/` (Pengalihan & Keamanan)
 
-Karena Anda memindahkan file `index.php` ke folder `htdocs/` dan folder core Laravel (seperti `vendor/` dan `bootstrap/`) berada sejajar di folder luar (`../`), Anda **tidak perlu mengubah jalur/path file index.php**!
+Karena seluruh proyek Laravel berada di dalam `htdocs/`, tetapi folder publik yang seharusnya diakses browser adalah `htdocs/public/`, kita harus membuat file **`.htaccess` utama** di dalam root folder `htdocs/` (sejajar dengan `.env` dan folder `app/`).
 
-Jalur default di `htdocs/index.php` akan tetap mendeteksi folder di tingkat atas dengan benar:
-```php
-require __DIR__.'/../vendor/autoload.php';
-$app = require_once __DIR__.'/../bootstrap/app.php';
+Buat file baru bernama `.htaccess` di dalam folder `htdocs/` FTP Anda, lalu isi dengan kode berikut:
+
+```apache
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Lindungi file & folder sensitif agar tidak bisa diakses langsung via browser
+    RedirectMatch 403 /\.(git|env|lock|json|yml|yaml)$
+    RedirectMatch 403 ^/(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/
+
+    # 2. Alihkan seluruh lalu lintas web ke folder public/ secara otomatis
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
 ```
+
+> [!NOTE]
+> File `.htaccess` di atas memastikan ketika pengunjung mengakses `https://domain-anda.com/`, server secara otomatis mengarahkan ke file `public/index.php` tanpa memperlihatkan nama folder `/public` pada URL. Jika pengunjung mencoba mengakses file `.env` atau folder `config/`, mereka akan langsung mendapatkan error **403 Forbidden**.
 
 ---
 
 ## 4. Konfigurasi Database & Environment (`.env`)
 
-Buat file baru bernama `.env` di direktori akar FTP Anda (sejajar dengan `htdocs`), lalu isi dengan konfigurasi berikut (sesuaikan dengan informasi database MySQL dari control panel InfinityFree Anda):
+Buat file baru bernama `.env` di dalam folder `htdocs/` FTP Anda, lalu isi dengan konfigurasi berikut (sesuaikan dengan informasi database MySQL dari control panel InfinityFree Anda):
 
 ```ini
 APP_NAME="Yuri-HomeStay"
@@ -112,8 +101,8 @@ DB_DATABASE=epiz_XXXX_xxxx     # Ganti dengan Nama Database MySQL Anda
 DB_USERNAME=epiz_XXXX_xxxx     # Ganti dengan Username MySQL Anda
 DB_PASSWORD=PasswordAnda       # Ganti dengan Password Akun Panel Anda
 
-# Konfigurasi Override Folder Publik Khusus Shared Hosting (Paling Penting!)
-PUBLIC_PATH=htdocs
+# Gunakan public folder default karena struktur folder relatif tetap dipertahankan
+PUBLIC_PATH=public
 
 SESSION_DRIVER=file
 CACHE_STORE=file
@@ -121,7 +110,7 @@ QUEUE_CONNECTION=sync
 ```
 
 > [!IMPORTANT]
-> - **`PUBLIC_PATH=htdocs`**: Baris ini memberi tahu Laravel secara dinamis bahwa folder web publik adalah `htdocs` (milik InfinityFree) alih-alih `public` bawaan Laravel. Hal ini menjamin file aset, gambar, dan link yang di-generate via program akan terdeteksi dengan tepat tanpa error path.
+> - **`PUBLIC_PATH=public`**: Pada konfigurasi ini, kita menggunakan `public` karena folder `public/` tetap berada di dalam proyek root (`htdocs`). Hal ini memastikan Laravel mengidentifikasi target penyimpanan asset dengan benar.
 > - **`APP_DEBUG=false`**: Selalu pastikan bernilai `false` di server produksi agar tidak membocorkan credential database jika terjadi error runtime.
 
 ---
