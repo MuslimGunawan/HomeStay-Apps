@@ -21,34 +21,64 @@ Sebelum mengunggah file ke FTP InfinityFree, Anda harus meng-compile file asset 
 
 ## 2. Struktur Direktori FTP (Penting demi Keamanan!)
 
-Jangan mengunggah seluruh proyek Laravel Anda langsung ke dalam folder `htdocs`. Hal ini dapat mengekspos file konfigurasi rahasia Anda (seperti `.env`) ke publik. Ikuti teknik struktur folder yang aman di bawah ini:
+Jangan mengunggah seluruh proyek Laravel Anda langsung ke dalam folder `htdocs`. Hal ini dapat mengekspos file konfigurasi rahasia Anda (seperti `.env`) ke publik. Kita harus memisahkan folder publik (`public/`) dengan folder kode inti Laravel Anda demi keamanan.
 
-### Struktur Target di File Manager FTP Anda:
+### Perbandingan Struktur Folder (Lokal vs Server FTP)
+
+#### 📂 DI KOMPUTER LOKAL ANDA (Laragon):
 ```
-/ (Akar Akun FTP Anda)
-├── .env (File konfigurasi Laravel Anda)
+c:\laragon\www\HomeStay-Apps\
 ├── app/
 ├── bootstrap/
 ├── config/
 ├── database/
+├── resources/
 ├── routes/
+├── storage/
 ├── vendor/
-├── ... (Semua folder & file inti Laravel lainnya)
+├── ... (file lainnya)
 │
-└── htdocs/ (Folder web root publik bawaan dari InfinityFree)
-    ├── build/ (Dipindahkan dari folder public/build/)
-    ├── images/ (Dipindahkan dari folder public/images/)
-    ├── .htaccess (Dipindahkan dari folder public/.htaccess)
-    ├── favicon.ico (Dipindahkan dari folder public/favicon.ico)
-    ├── index.php (Dipindahkan dari folder public/index.php)
-    └── robots.txt (Dipindahkan dari folder public/robots.txt)
+└── public/  <-- (HANYA ISI FOLDER INI YANG DIUNGGAH KE HTDOCS)
+    ├── build/
+    ├── images/
+    ├── .htaccess
+    ├── favicon.ico
+    ├── index.php
+    └── robots.txt
 ```
 
-### Langkah Upload:
-1. Masuk ke FTP akun InfinityFree Anda menggunakan Client FTP seperti **FileZilla** (Direkomendasikan) atau File Manager bawaan di Control Panel.
-2. Unggah **semua folder dan file** proyek Laravel Anda (termasuk folder `vendor` yang telah di-install secara lokal) ke folder akar `/` (sejajar dengan folder `htdocs`).
-3. Buka folder `public/` di lokal Anda, lalu unggah seluruh isinya (termasuk subfolder `build`, `images`, file `index.php`, `.htaccess`, dsb.) **langsung ke dalam folder `htdocs/`** pada FTP.
-4. Folder `public/` kosong di direktori akar FTP bisa Anda biarkan saja atau dihapus.
+#### 🌐 DI SERVER FTP INFINITYFREE (Target Akhir):
+```
+/ (Akar Akun FTP Anda)
+├── app/                  <-- Diunggah dari luar folder public lokal
+├── bootstrap/            <-- Diunggah dari luar folder public lokal
+├── config/               <-- Diunggah dari luar folder public lokal
+├── database/             <-- Diunggah dari luar folder public lokal
+├── resources/            <-- Diunggah dari luar folder public lokal
+├── routes/               <-- Diunggah dari luar folder public lokal
+├── storage/              <-- Diunggah dari luar folder public lokal
+├── vendor/               <-- Diunggah dari luar folder public lokal
+├── artisan               <-- Diunggah dari luar folder public lokal
+├── .env                  <-- Buat baru langsung di FTP (konfigurasi produksi)
+│
+└── htdocs/               <-- (Folder bawaan dari InfinityFree)
+    ├── build/            <-- Diunggah dari DALAM folder public/ lokal
+    ├── images/           <-- Diunggah dari DALAM folder public/ lokal
+    ├── .htaccess         <-- Diunggah dari DALAM folder public/ lokal
+    ├── favicon.ico       <-- Diunggah dari DALAM folder public/ lokal
+    ├── index.php         <-- Diunggah dari DALAM folder public/ lokal
+    └── robots.txt        <-- Diunggah dari DALAM folder public/ lokal
+```
+
+### Langkah Praktis Pengunggahan via FileZilla:
+1. **Unggah Folder Inti (Luar `htdocs`):**
+   - Di panel kanan (Server FTP), pastikan Anda berada di direktori akar `/` (sejajar dengan folder `htdocs`).
+   - Di panel kiri (Komputer Lokal), blok semua file dan folder proyek Anda **KECUALI folder `public`**.
+   - Seret (drag & drop) semuanya ke panel kanan untuk mulai mengunggah.
+2. **Unggah File Publik (Ke dalam `htdocs`):**
+   - Di panel kiri (Komputer Lokal), **masuklah ke dalam folder `public/`**.
+   - Di panel kanan (Server FTP), **masuklah ke dalam folder `htdocs/`**.
+   - Blok seluruh isi di dalam folder `public/` lokal Anda, lalu seret ke panel kanan (ke dalam `htdocs/`).
 
 ---
 
@@ -103,17 +133,17 @@ Karena InfinityFree tidak menyediakan Terminal SSH / command-line php, Anda tida
 Untuk melakukan migrasi database pertama kali di server InfinityFree, Anda bisa menggunakan salah satu dari metode di bawah ini:
 
 ### Metode A: Ekspor/Impor Database lewat phpMyAdmin (Direkomendasikan & Paling Mudah)
-1. Ekspor database lokal Anda dari Laragon:
-   - Buka `phpMyAdmin` atau aplikasi database management (HeidiSQL/DBeaver) secara lokal.
-   - Pilih database `homestay_apps`.
-   - Pilih tab **Export** dan unduh file `.sql` database Anda.
-2. Impor ke database InfinityFree:
-   - Buka Control Panel InfinityFree Anda, cari menu **phpMyAdmin**.
-   - Buka database yang sudah dibuat untuk homestay Anda.
-   - Pilih tab **Import**, unggah file `.sql` lokal tadi, lalu klik **Go**.
+1. **Gunakan File SQL yang Sudah Siap Pakai:**
+   - Di root folder proyek Anda, sudah tersedia file **[database.sql](file:///c:/laragon/www/HomeStay-Apps/database.sql)**.
+   - File ini telah diekspor menggunakan encoding **UTF-8** standar dan dinonaktifkan opsi **GTID**-nya agar tidak menimbulkan error hak akses saat diimpor ke InfinityFree.
+2. **Impor ke Database InfinityFree:**
+   - Masuk ke akun InfinityFree Anda, cari menu **MySQL Databases**, lalu buat database baru.
+   - Klik tombol **Admin** pada database tersebut untuk masuk ke **phpMyAdmin** produksi Anda.
+   - Buka database baru tersebut di panel sebelah kiri.
+   - Pilih tab/menu **Import** di bagian atas, pilih file **[database.sql](file:///c:/laragon/www/HomeStay-Apps/database.sql)** dari proyek lokal Anda, lalu klik **Import** atau **Go**.
 
 ### Metode B: Trigger Migrasi lewat Route Web Sementara
-Jika database kosong dan Anda ingin menjalankan migrasi menggunakan server PHP InfinityFree:
+Jika database kosong dan Anda ingin menjalankan migrasi bersih menggunakan server PHP InfinityFree:
 1. Buka file `routes/web.php` di FTP Anda.
 2. Tambahkan route temporer di baris paling bawah:
    ```php
