@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore, useEffect } from 'react';
 
 export type ResolvedAppearance = 'light' | 'dark';
 export type Appearance = ResolvedAppearance | 'system';
@@ -18,6 +18,26 @@ const prefersDark = (): boolean => {
     }
 
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
+};
+
+const arePreferencesAllowed = (): boolean => {
+    if (typeof window === 'undefined') {
+        return false;
+    }
+
+    const choicesStr = localStorage.getItem('cookie_consent_choices');
+
+    if (!choicesStr) {
+        return true; // default allowed before explicit opt-out
+    }
+
+    try {
+        const choices = JSON.parse(choicesStr);
+
+        return choices.preferences !== false;
+    } catch {
+        return true;
+    }
 };
 
 const setCookie = (name: string, value: string, days = 365): void => {
@@ -75,7 +95,7 @@ export function initializeTheme(): void {
         return;
     }
 
-    if (!localStorage.getItem('appearance')) {
+    if (arePreferencesAllowed() && !localStorage.getItem('appearance')) {
         localStorage.setItem('appearance', 'system');
         setCookie('appearance', 'system');
     }
@@ -98,14 +118,35 @@ export function useAppearance(): UseAppearanceReturn {
         ? 'dark'
         : 'light';
 
+    useEffect(() => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        const handlePreferencesDisabled = () => {
+            currentAppearance = 'system';
+            applyTheme('system');
+            notify();
+        };
+
+        window.addEventListener('cookie-preferences-disabled', handlePreferencesDisabled);
+
+        return () => window.removeEventListener('cookie-preferences-disabled', handlePreferencesDisabled);
+    }, []);
+
     const updateAppearance = (mode: Appearance): void => {
         currentAppearance = mode;
 
-        // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', mode);
+        if (arePreferencesAllowed()) {
+            // Store in localStorage for client-side persistence...
+            localStorage.setItem('appearance', mode);
 
-        // Store in cookie for SSR...
-        setCookie('appearance', mode);
+            // Store in cookie for SSR...
+            setCookie('appearance', mode);
+        } else {
+            localStorage.removeItem('appearance');
+            document.cookie = 'appearance=; path=/; max-age=0; SameSite=Lax';
+        }
 
         applyTheme(mode);
         notify();

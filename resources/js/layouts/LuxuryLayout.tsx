@@ -52,11 +52,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
     };
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${
-            isDark 
-                ? 'bg-[#050505] text-[#ededec] selection:bg-[#c5a880] selection:text-black' 
-                : 'bg-[#fafafa] text-[#1a1a1a] selection:bg-[#c5a880] selection:text-white'
-        } overflow-x-clip`}>
+        <div className="min-h-screen transition-colors duration-300 bg-[#fafafa] dark:bg-[#050505] text-[#1a1a1a] dark:text-[#ededec] selection:bg-[#c5a880] selection:text-white dark:selection:text-black overflow-x-clip">
             {/* Custom Preloader */}
             <Preloader />
 
@@ -72,9 +68,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
             </main>
 
             {/* High-Fidelity Luxurious Footer */}
-            <footer className={`relative mt-auto border-t transition-colors duration-300 ${
-                isDark ? 'border-white/5 bg-[#0a0a0a]' : 'border-black/5 bg-[#f5f5f4]'
-            } pt-16 pb-8`}>
+            <footer className="relative mt-auto border-t border-black/5 dark:border-white/5 bg-[#f5f5f4] dark:bg-[#0a0a0a] transition-colors duration-300 pt-16 pb-8">
                 {/* Background soft glowing blur radial circle */}
                 <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-gold/5 blur-[120px] pointer-events-none"></div>
                 
@@ -82,7 +76,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                         {/* Column 1: Brand Info */}
                         <div className="space-y-4">
-                            <span className={`font-outfit text-2xl font-extrabold tracking-widest ${isDark ? 'text-white' : 'text-neutral-900'}`}>
+                            <span className="font-outfit text-2xl font-extrabold tracking-widest text-neutral-900 dark:text-white">
                                 {(() => {
                                     const siteName = (name || 'Yuri-HomeStay').toUpperCase();
 
@@ -111,7 +105,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                                     );
                                 })()}
                             </span>
-                            <p className={`text-xs leading-relaxed max-w-xs ${isDark ? 'text-white/50' : 'text-neutral-600'}`}>
+                            <p className="text-xs leading-relaxed max-w-xs text-neutral-600 dark:text-white/50">
                                 Layanan booking kamar mewah premium di Yuri-HomeStay Lhokseumawe. Memberikan pengalaman menginap eksklusif, aman, nyaman, dan tak terlupakan.
                             </p>
                         </div>
@@ -119,7 +113,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                         {/* Column 2: Quick Links */}
                         <div className="space-y-4">
                             <h4 className="font-outfit text-sm font-semibold tracking-wider uppercase text-gold">Tautan</h4>
-                            <ul className={`space-y-2 text-xs ${isDark ? 'text-white/60' : 'text-neutral-600'}`}>
+                            <ul className="space-y-2 text-xs text-neutral-600 dark:text-white/60">
                                 <li><a href="/" className="hover:text-gold transition-colors">Beranda</a></li>
                                 <li><a href="/explore" className="hover:text-gold transition-colors">Cari Kamar</a></li>
                                 <li><a href="/help" className="hover:text-gold transition-colors">Pusat Bantuan</a></li>
@@ -129,7 +123,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                         {/* Column 3: Kamar Pilihan */}
                         <div className="space-y-4">
                             <h4 className="font-outfit text-sm font-semibold tracking-wider uppercase text-gold">Kamar Pilihan</h4>
-                            <ul className={`space-y-2 text-xs ${isDark ? 'text-white/60' : 'text-neutral-600'}`}>
+                            <ul className="space-y-2 text-xs text-neutral-600 dark:text-white/60">
                                 <li><a href="/explore" className="hover:text-gold transition-colors">Deluxe Premium Room</a></li>
                                 <li><a href="/explore" className="hover:text-gold transition-colors">Executive Glass Suite</a></li>
                                 <li><a href="/explore" className="hover:text-gold transition-colors">Heritage Suite Joglo</a></li>
@@ -140,7 +134,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                         {/* Column 4: Contact Support */}
                         <div className="space-y-4">
                             <h4 className="font-outfit text-sm font-semibold tracking-wider uppercase text-gold">Kontak Kami</h4>
-                            <ul className={`space-y-3 text-xs ${isDark ? 'text-white/60' : 'text-neutral-600'}`}>
+                            <ul className="space-y-3 text-xs text-neutral-600 dark:text-white/60">
                                 <li className="flex items-start space-x-2">
                                     <MapPin className="h-4 w-4 text-gold shrink-0 mt-0.5" />
                                     <span>{address || '54JC+JV2, Mns Mesjid, Kec. Muara Dua, Lhokseumawe, Aceh'}</span>
@@ -158,9 +152,7 @@ export default function LuxuryLayout({ children }: LuxuryLayoutProps) {
                     </div>
 
                     {/* Bottom strip */}
-                    <div className={`border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 ${
-                        isDark ? 'border-white/5 text-white/40' : 'border-black/5 text-neutral-500'
-                    } text-[11px]`}>
+                    <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 border-black/5 dark:border-white/5 text-neutral-500 dark:text-white/40 text-[11px]">
                         <p>© {new Date().getFullYear()} {name || 'Yuri-HomeStay'} (UAS PABW Lanjut). All Rights Reserved.</p>
                         
                         <div className="flex space-x-4">

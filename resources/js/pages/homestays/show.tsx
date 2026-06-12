@@ -1,5 +1,5 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { MapPin, Star, Users, Home, Calendar, Wifi, AirVent, Compass, Sparkles, Shield, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download, Share2, X, AlertCircle, ChevronDown, Video as VideoIcon } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { MapPin, Star, Users, Home, Calendar, Sparkles, ChevronLeft, ChevronRight, Share2, AlertCircle, ChevronDown, Video as VideoIcon } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 import Lightbox from "yet-another-react-lightbox";
@@ -168,28 +168,28 @@ function InteractiveCalendar({ bookedDates = [], checkIn, checkOut, onChange }: 
     };
 
     return (
-        <div className="bg-black/30 border border-white/10 rounded-2xl p-4 space-y-3 select-none">
+        <div className="bg-neutral-50 dark:bg-black/30 border border-neutral-200 dark:border-white/10 rounded-2xl p-4 space-y-3 select-none">
             <div className="flex items-center justify-between">
                 <button 
                     type="button" 
                     onClick={prevMonth}
-                    className="p-1.5 rounded-lg border border-white/5 bg-white/5 hover:bg-gold hover:text-black transition-colors"
+                    className="p-1.5 rounded-lg border border-neutral-200 dark:border-white/5 bg-neutral-100 dark:bg-white/5 hover:bg-gold hover:text-black transition-colors"
                 >
                     <ChevronLeft className="h-4 w-4" />
                 </button>
-                <span className="font-outfit text-xs font-bold text-white uppercase tracking-wider">
+                <span className="font-outfit text-xs font-bold text-neutral-800 dark:text-white uppercase tracking-wider">
                     {monthNames[month]} {year}
                 </span>
                 <button 
                     type="button" 
                     onClick={nextMonth}
-                    className="p-1.5 rounded-lg border border-white/5 bg-white/5 hover:bg-gold hover:text-black transition-colors"
+                    className="p-1.5 rounded-lg border border-neutral-200 dark:border-white/5 bg-neutral-100 dark:bg-white/5 hover:bg-gold hover:text-black transition-colors"
                 >
                     <ChevronRight className="h-4 w-4" />
                 </button>
             </div>
 
-            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-white/40 uppercase">
+            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-neutral-600 dark:text-white/40 uppercase">
                 <span>Min</span>
                 <span>Sen</span>
                 <span>Sel</span>
@@ -209,16 +209,16 @@ function InteractiveCalendar({ bookedDates = [], checkIn, checkOut, onChange }: 
                     const range = isInRange(dayObj.dateStr);
                     const disabled = dayObj.isPast || dayObj.isBlocked;
 
-                    let bgClass = "hover:bg-white/5 text-white/80";
+                    let bgClass = "hover:bg-neutral-100 dark:hover:bg-white/5 text-neutral-700 dark:text-white/80";
 
                     if (disabled) {
                         bgClass = dayObj.isBlocked 
                             ? "bg-rose-500/10 text-rose-400/50 line-through cursor-not-allowed border border-rose-500/10" 
-                            : "text-white/20 cursor-not-allowed";
+                            : "text-neutral-300 dark:text-white/20 cursor-not-allowed";
                     } else if (selected) {
                         bgClass = "bg-gold text-black font-extrabold shadow-lg shadow-gold/20 scale-105 rounded-lg";
                     } else if (range) {
-                        bgClass = "bg-gold/20 text-gold font-semibold rounded-lg";
+                        bgClass = "bg-gold/20 text-gold-dark dark:text-gold font-semibold rounded-lg";
                     }
 
                     return (
@@ -236,7 +236,7 @@ function InteractiveCalendar({ bookedDates = [], checkIn, checkOut, onChange }: 
                 })}
             </div>
             
-            <div className="flex items-center justify-center gap-4 text-[9px] text-white/40 pt-2 border-t border-white/5">
+            <div className="flex items-center justify-center gap-4 text-[9px] text-neutral-600 dark:text-white/40 pt-2 border-t border-neutral-200 dark:border-white/5">
                 <div className="flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-gold"></span>
                     <span>Pilihan</span>
@@ -246,7 +246,7 @@ function InteractiveCalendar({ bookedDates = [], checkIn, checkOut, onChange }: 
                     <span>Terisi</span>
                 </div>
                 <div className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-white/10"></span>
+                    <span className="h-2 w-2 rounded-full bg-neutral-200 dark:bg-white/10"></span>
                     <span>Tersedia</span>
                 </div>
             </div>
@@ -490,23 +490,23 @@ return;
             <div className="mx-auto max-w-7xl w-full px-6 py-12 md:px-8 space-y-12">
                 
                 {/* 1. HEADER DESCRIPTION */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/5 pb-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-neutral-200 dark:border-white/5 pb-8">
                     <div className="space-y-3 text-left">
                         <div className="flex items-center space-x-2">
                             <span className="bg-gold text-deep-black text-[9px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider font-outfit">
                                 Verified Premium
                             </span>
-                            <span className="flex items-center text-xs text-gold font-bold">
+                            <span className="flex items-center text-xs text-neutral-800 dark:text-gold font-bold">
                                 <Star className="h-4 w-4 fill-gold mr-1" />
                                 {(homestay.average_rating ?? 0).toFixed(1)} ({(homestay.reviews || []).length} Ulasan)
                             </span>
                         </div>
 
-                        <h1 className="font-outfit text-3xl font-extrabold text-white md:text-5xl leading-tight">
+                        <h1 className="font-outfit text-3xl font-extrabold text-neutral-900 dark:text-white md:text-5xl leading-tight">
                             {homestay.name}
                         </h1>
 
-                        <div className="flex flex-wrap items-center gap-4 text-xs text-white/50">
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-neutral-500 dark:text-white/50">
                             <span className="flex items-center">
                                 <MapPin className="h-4 w-4 text-gold mr-1.5 shrink-0" />
                                 {homestay.address}, {homestay.city}
@@ -519,17 +519,17 @@ return;
                     </div>
 
                     <div className="text-right shrink-0">
-                        <span className="block text-[10px] font-bold text-white/30 uppercase tracking-widest">Harga per malam</span>
-                        <span className="text-3xl font-extrabold text-gold font-outfit">
+                        <span className="block text-[10px] font-bold text-neutral-500 dark:text-white/30 uppercase tracking-widest">Harga per malam</span>
+                        <span className="text-3xl font-extrabold text-neutral-900 dark:text-gold font-outfit">
                             Rp {parseFloat((homestay.price_per_night || 0) as any).toLocaleString('id-ID')}
-                            <span className="text-sm font-normal text-white/50">/malam</span>
+                            <span className="text-sm font-normal text-neutral-500 dark:text-white/50">/malam</span>
                         </span>
                     </div>
                 </div>
 
                 {/* 2. TABBED Luxury Media Gallery */}
                 <section className="space-y-6">
-                    <div className="flex flex-wrap items-center gap-2 border-b border-white/5 pb-4 overflow-x-auto">
+                    <div className="flex flex-wrap items-center gap-2 border-b border-neutral-200 dark:border-white/5 pb-4 overflow-x-auto">
                         {categories.map((cat) => (
                             <button
                                 key={cat}
@@ -537,7 +537,7 @@ return;
                                 className={`text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full border transition-all duration-300 ${
                                     activeTab === cat
                                         ? 'bg-gold border-gold text-deep-black scale-105'
-                                        : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:border-white/30'
+                                        : 'bg-neutral-100 dark:bg-white/5 border-neutral-200 dark:border-white/10 text-neutral-600 dark:text-white/70 hover:text-neutral-900 hover:border-neutral-300 dark:hover:text-white dark:hover:border-white/30'
                                 }`}
                             >
                                 {cat === 'all' ? 'Semua Foto' : cat === 'exterior' ? 'Halaman Luar' : cat === 'interior' ? 'Kamar Dalam' : cat}
@@ -547,13 +547,13 @@ return;
 
                     {/* Photo Grid */}
                     <div className="relative">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 rounded-3xl overflow-hidden border border-white/10 bg-black/40 p-2">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 rounded-3xl overflow-hidden border border-neutral-200 dark:border-white/10 bg-neutral-100 dark:bg-black/40 p-2">
                             {/* Large Main Photo (left) */}
-                            {filteredMedia.slice(0, 1).map((media, index) => (
+                            {filteredMedia.slice(0, 1).map((media) => (
                                 <div
                                     key={media.id}
                                     onClick={() => openLightbox(0)}
-                                    className="md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto relative group cursor-pointer overflow-hidden rounded-2xl border border-white/5"
+                                    className="md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto relative group cursor-pointer overflow-hidden rounded-2xl border border-neutral-200 dark:border-white/5"
                                 >
                                     <img
                                         src={media.file_path}
@@ -582,7 +582,7 @@ return;
                                     <div
                                         key={media.id}
                                         onClick={() => openLightbox(index + 1)}
-                                        className="aspect-square relative group cursor-pointer overflow-hidden rounded-xl border border-white/5 bg-black/20"
+                                        className="aspect-square relative group cursor-pointer overflow-hidden rounded-xl border border-neutral-200 dark:border-white/5 bg-neutral-50 dark:bg-black/20"
                                     >
                                         <img
                                             src={media.file_path}
@@ -607,7 +607,7 @@ return;
                                 {filteredMedia.length < 5 && Array.from({ length: 5 - filteredMedia.length }).map((_, placeholderIdx) => (
                                     <div
                                         key={`placeholder-${placeholderIdx}`}
-                                        className="aspect-square relative rounded-xl border border-white/5 bg-white/5 flex items-center justify-center text-white/20"
+                                        className="aspect-square relative rounded-xl border border-neutral-200 dark:border-white/5 bg-neutral-50 dark:bg-white/5 flex items-center justify-center text-neutral-300 dark:text-white/20"
                                     >
                                         <Home className="h-6 w-6" />
                                     </div>
@@ -634,30 +634,30 @@ return;
                     <div className="lg:col-span-2 space-y-10">
                         {/* Description */}
                         <div className="space-y-4">
-                            <h3 className="font-outfit text-xl font-bold text-white flex items-center">
+                            <h3 className="font-outfit text-xl font-bold text-neutral-900 dark:text-white flex items-center">
                                 <Home className="mr-2.5 h-5 w-5 text-gold" />
                                 Deskripsi Kamar
                             </h3>
-                            <p className="text-xs text-white/50 leading-relaxed font-sans whitespace-pre-line">
+                            <p className="text-xs text-neutral-600 dark:text-white/50 leading-relaxed font-sans whitespace-pre-line">
                                 {homestay.description || ''}
                             </p>
                         </div>
 
                         {/* Amenities */}
                         <div className="space-y-6">
-                            <h3 className="font-outfit text-xl font-bold text-white flex items-center">
+                            <h3 className="font-outfit text-xl font-bold text-neutral-900 dark:text-white flex items-center">
                                 <Sparkles className="mr-2.5 h-5 w-5 text-gold animate-pulse" />
                                 Fasilitas Homestay
                             </h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
                                 {(homestay.amenities || []).map((amenity) => (
-                                    <div key={amenity.id} className="flex items-start space-x-3 p-4 bg-deep-charcoal/20 border border-white/5 rounded-2xl">
+                                    <div key={amenity.id} className="flex items-start space-x-3 p-4 bg-neutral-50 dark:bg-deep-charcoal/20 border border-neutral-200 dark:border-white/5 rounded-2xl">
                                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold">
                                             <Sparkles className="h-4 w-4" />
                                         </div>
                                         <div>
-                                            <span className="block text-xs font-bold text-white">{amenity.name}</span>
-                                            <span className="text-[10px] text-white/40 leading-tight block mt-0.5">{amenity.description || 'Fasilitas premium'}</span>
+                                            <span className="block text-xs font-bold text-neutral-900 dark:text-white">{amenity.name}</span>
+                                            <span className="text-[10px] text-neutral-500 dark:text-white/40 leading-tight block mt-0.5">{amenity.description || 'Fasilitas premium'}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -669,38 +669,38 @@ return;
 
                     {/* Right: Booking widget */}
                     <div className="space-y-6">
-                        <div className="sticky top-28 bg-[#111111] border border-white/10 p-6 rounded-3xl shadow-2xl space-y-6 text-left">
-                            <div className="border-b border-white/5 pb-4">
-                                <span className="text-xs text-white/50">Mulai menginap mewah</span>
-                                <h3 className="font-outfit text-lg font-bold text-white mt-1">Form Reservasi Instan</h3>
+                        <div className="sticky top-28 bg-white dark:bg-[#111111] border border-neutral-200 dark:border-white/10 p-6 rounded-3xl shadow-2xl space-y-6 text-left">
+                            <div className="border-b border-neutral-200 dark:border-white/5 pb-4">
+                                <span className="text-xs text-neutral-500 dark:text-white/50">Mulai menginap mewah</span>
+                                <h3 className="font-outfit text-lg font-bold text-neutral-900 dark:text-white mt-1">Form Reservasi Instan</h3>
                             </div>
 
                             {/* Booking dates picker */}
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold uppercase tracking-wider text-white/40">Tanggal Check-in</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 dark:text-white/40">Tanggal Check-in</label>
                                     <input
                                         type="date"
                                         min={new Date().toISOString().split('T')[0]}
                                         value={bookingDetails.check_in}
                                         onChange={(e) => handleDateChange('check_in', e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold focus:outline-none cursor-pointer [color-scheme:dark]"
+                                        className="w-full bg-neutral-50 dark:bg-black/40 border border-neutral-200 dark:border-white/10 px-4 py-3 rounded-xl text-xs text-neutral-800 dark:text-white focus:border-gold focus:outline-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold uppercase tracking-wider text-white/40">Tanggal Check-out</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 dark:text-white/40">Tanggal Check-out</label>
                                     <input
                                         type="date"
                                         min={bookingDetails.check_in || new Date().toISOString().split('T')[0]}
                                         value={bookingDetails.check_out}
                                         onChange={(e) => handleDateChange('check_out', e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 px-4 py-3 rounded-xl text-xs text-white focus:border-gold focus:outline-none cursor-pointer [color-scheme:dark]"
+                                        className="w-full bg-neutral-50 dark:bg-black/40 border border-neutral-200 dark:border-white/10 px-4 py-3 rounded-xl text-xs text-neutral-800 dark:text-white focus:border-gold focus:outline-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
                                     />
                                 </div>
 
                                 <div className="space-y-1.5 pt-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-1">Pilih Jadwal Menginap (Klik Kalender)</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 dark:text-white/40 block mb-1">Pilih Jadwal Menginap (Klik Kalender)</label>
                                     <InteractiveCalendar
                                         bookedDates={bookedDates}
                                         checkIn={bookingDetails.check_in}
@@ -710,10 +710,10 @@ return;
                                 </div>
 
                                 <div className="relative space-y-1.5" ref={guestsDropdownRef}>
-                                    <label className="text-[10px] font-bold uppercase tracking-wider text-white/40">Jumlah Tamu</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 dark:text-white/40">Jumlah Tamu</label>
                                     <div
                                         onClick={() => setGuestsDropdownOpen(!guestsDropdownOpen)}
-                                        className="flex items-center justify-between w-full bg-black/40 border border-white/10 px-4 py-3 rounded-xl text-xs text-white cursor-pointer select-none"
+                                        className="flex items-center justify-between w-full bg-neutral-50 dark:bg-black/40 border border-neutral-200 dark:border-white/10 px-4 py-3 rounded-xl text-xs text-neutral-800 dark:text-white cursor-pointer select-none"
                                     >
                                         <span>{bookingDetails.total_guests} Tamu</span>
                                         <ChevronDown className={`h-3.5 w-3.5 text-gold/60 transition-transform duration-300 ${guestsDropdownOpen ? 'rotate-180' : ''}`} />
@@ -721,7 +721,7 @@ return;
 
                                     {/* Dropdown panel */}
                                     {guestsDropdownOpen && (
-                                        <div className="absolute top-[calc(100%+6px)] left-0 z-50 w-full bg-[#111111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl p-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        <div className="absolute top-[calc(100%+6px)] left-0 z-50 w-full bg-white dark:bg-[#111111] border border-neutral-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl p-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
                                             <div className="max-h-48 overflow-y-auto pr-0.5 scrollbar-thin">
                                                 {Array.from({ length: homestay.max_guests || 1 }).map((_, idx) => {
                                                     const num = idx + 1;
@@ -737,7 +737,7 @@ return;
                                                             className={`w-full text-left px-3 py-2 rounded-lg text-[11px] font-bold transition-all duration-200 ${
                                                                 bookingDetails.total_guests === num
                                                                     ? 'bg-gold text-deep-black'
-                                                                    : 'text-white/70 hover:bg-white/5 hover:text-white'
+                                                                    : 'text-neutral-700 dark:text-white/70 hover:bg-neutral-100 dark:hover:bg-white/5 hover:text-neutral-900 dark:hover:text-white'
                                                             }`}
                                                         >
                                                             {num} Tamu
@@ -777,12 +777,12 @@ return;
 
                             {/* Calculations listing */}
                             {priceCalculations && (
-                                <div className="bg-black/30 border border-white/5 p-4 rounded-2xl space-y-2 text-xs">
-                                    <div className="flex justify-between text-white/50">
+                                <div className="bg-neutral-50 dark:bg-black/30 border border-neutral-200 dark:border-white/5 p-4 rounded-2xl space-y-2 text-xs">
+                                    <div className="flex justify-between text-neutral-500 dark:text-white/50">
                                         <span>Rp {parseFloat((homestay.price_per_night || 0) as any).toLocaleString('id-ID')} x {priceCalculations.days} malam</span>
                                         <span>Rp {priceCalculations.total.toLocaleString('id-ID')}</span>
                                     </div>
-                                    <div className="border-t border-white/5 pt-2 flex justify-between font-bold text-gold">
+                                    <div className="border-t border-neutral-200 dark:border-white/5 pt-2 flex justify-between font-bold text-gold">
                                         <span>Total Biaya Stay</span>
                                         <span>Rp {priceCalculations.total.toLocaleString('id-ID')}</span>
                                     </div>
@@ -803,7 +803,7 @@ return;
                             <a
                                 href={getWhatsAppUrl()}
                                 target="_blank"
-                                className="w-full border border-white/10 hover:border-gold hover:bg-gold/5 text-white font-bold text-xs py-3 rounded-xl transition-all flex items-center justify-center space-x-2"
+                                className="w-full border border-neutral-200 dark:border-white/10 hover:border-gold dark:hover:border-gold hover:bg-gold/5 dark:hover:bg-gold/5 text-neutral-800 dark:text-white font-bold text-xs py-3 rounded-xl transition-all flex items-center justify-center space-x-2"
                             >
                                 <Share2 className="h-4 w-4 text-gold" />
                                 <span>Hubungi Host via WhatsApp</span>
@@ -813,18 +813,18 @@ return;
                 </div>
 
                 {/* 5. VERIFIED GUEST REVIEWS */}
-                <section className="border-t border-white/5 pt-12 text-left space-y-8">
-                    <h3 className="font-outfit text-xl font-bold text-white flex items-center">
+                <section className="border-t border-neutral-200 dark:border-white/5 pt-12 text-left space-y-8">
+                    <h3 className="font-outfit text-xl font-bold text-neutral-900 dark:text-white flex items-center">
                         <Star className="mr-2.5 h-5 w-5 text-gold fill-gold" />
                         Ulasan Tamu Terverifikasi ({(homestay.reviews || []).length})
                     </h3>
 
                     {(homestay.reviews || []).length === 0 ? (
-                        <p className="text-xs text-white/40">Belum ada ulasan untuk homestay ini. Jadilah tamu pertama yang memberikan ulasan!</p>
+                        <p className="text-xs text-neutral-500 dark:text-white/40">Belum ada ulasan untuk homestay ini. Jadilah tamu pertama yang memberikan ulasan!</p>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {(homestay.reviews || []).map((rev) => (
-                                <div key={rev.id} className="bg-deep-charcoal/20 border border-white/5 p-6 rounded-2xl space-y-4">
+                                <div key={rev.id} className="bg-neutral-50 dark:bg-deep-charcoal/20 border border-neutral-200 dark:border-white/5 p-6 rounded-2xl space-y-4">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-3">
                                             <div className="h-10 w-10 overflow-hidden rounded-full bg-gold/20 flex items-center justify-center">
@@ -835,8 +835,8 @@ return;
                                                 )}
                                             </div>
                                             <div>
-                                                <span className="block text-xs font-bold text-white">{rev.guest?.name || 'Tamu'}</span>
-                                                <span className="text-[9px] text-white/30">{formatDate(rev.created_at)}</span>
+                                                <span className="block text-xs font-bold text-neutral-900 dark:text-white">{rev.guest?.name || 'Tamu'}</span>
+                                                <span className="text-[9px] text-neutral-400 dark:text-white/30">{formatDate(rev.created_at)}</span>
                                             </div>
                                         </div>
 
@@ -846,7 +846,7 @@ return;
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-xs text-white/60 leading-relaxed font-sans">
+                                    <p className="text-xs text-neutral-600 dark:text-white/60 leading-relaxed font-sans">
                                         "{rev.comment}"
                                     </p>
                                 </div>
