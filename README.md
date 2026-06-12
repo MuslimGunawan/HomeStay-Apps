@@ -167,9 +167,132 @@ Aplikasi ini menggunakan database **MySQL** dengan skema relasi terstruktur seba
 - **`support_tickets`**: Layanan aduan/pertanyaan pengguna ke Super Admin.
 - **`homestay_media` & `room_media`**: Menyimpan file foto/video eksterior dan interior homestay yang dilindungi watermark dinamis di backend.
 
-### 2. Diagram Hubungan Relasi (Relationship Mapping)
+### 2. Diagram Hubungan Relasi (ERD - Entity Relationship Diagram)
 
-Pemetaan relasi model Eloquent pada backend didefinisikan sebagai berikut:
+Berikut adalah diagram relasi entitas visual menggunakan Mermaid yang menunjukkan tabel, kolom kunci, tipe data, dan relasi hubungan antar tabel secara terperinci:
+
+```mermaid
+erDiagram
+    USERS {
+        bigint id PK
+        string name
+        string email UK
+        string password
+        string phone
+        string role
+        string avatar
+    }
+    HOMESTAYS {
+        bigint id PK
+        bigint user_id FK
+        string name
+        string slug UK
+        text description
+        text address
+        string city
+        decimal price_per_night
+        integer max_guests
+        string status
+        string category
+    }
+    BOOKINGS {
+        bigint id PK
+        bigint user_id FK
+        bigint homestay_id FK
+        bigint payment_method_id FK
+        date check_in
+        date check_out
+        integer total_guests
+        decimal total_price
+        string payment_receipt_path
+        timestamp paid_at
+        string status
+    }
+    AMENITIES {
+        bigint id PK
+        string name
+        string icon
+    }
+    AMENITY_HOMESTAY {
+        bigint amenity_id FK
+        bigint homestay_id FK
+    }
+    PAYMENT_METHODS {
+        bigint id PK
+        string name
+        string type
+        string account_number
+        string account_name
+        string logo_path
+        boolean is_active
+    }
+    REVIEWS {
+        bigint id PK
+        bigint user_id FK
+        bigint homestay_id FK
+        integer rating
+        text comment
+    }
+    STAY_COMPLAINTS {
+        bigint id PK
+        bigint booking_id FK
+        bigint user_id FK
+        string title
+        text description
+        string status
+    }
+    SUPPORT_TICKETS {
+        bigint id PK
+        bigint user_id FK
+        string subject
+        text message
+        string status
+    }
+    HOMESTAY_MEDIA {
+        bigint id PK
+        bigint homestay_id FK
+        string file_path
+        boolean is_primary
+    }
+    ROOM_MEDIA {
+        bigint id PK
+        bigint homestay_id FK
+        string file_path
+        string type
+        string category
+        string custom_category
+        boolean is_primary
+    }
+    PERMISSIONS {
+        bigint id PK
+        string name
+        string slug UK
+        string description
+    }
+    PERMISSION_USER {
+        bigint permission_id FK
+        bigint user_id FK
+    }
+
+    USERS ||--o{ HOMESTAYS : "hosts"
+    USERS ||--o{ BOOKINGS : "books"
+    USERS ||--o{ REVIEWS : "reviews"
+    USERS ||--o{ SUPPORT_TICKETS : "creates"
+    USERS ||--o{ PERMISSION_USER : "has"
+    PERMISSIONS ||--o{ PERMISSION_USER : "grants"
+    HOMESTAYS ||--o{ BOOKINGS : "has_bookings"
+    HOMESTAYS ||--o{ REVIEWS : "has_reviews"
+    HOMESTAYS ||--o{ HOMESTAY_MEDIA : "has_photos"
+    HOMESTAYS ||--o{ ROOM_MEDIA : "has_rooms"
+    HOMESTAYS ||--o{ AMENITY_HOMESTAY : "contains"
+    AMENITIES ||--o{ AMENITY_HOMESTAY : "belongs_to"
+    PAYMENT_METHODS ||--o{ BOOKINGS : "accepts"
+    BOOKINGS ||--o{ STAY_COMPLAINTS : "has_complaints"
+```
+
+### 3. Pemetaan Hubungan Model Eloquent (Backend)
+
+Secara programatik di dalam kode Laravel, relasi tersebut dideklarasikan sebagai berikut:
 
 - **`User` (Host)** ➔ **Has Many** ➔ `Homestay` *(Satu host mengelola banyak penginapan)*
 - **`User` (Guest)** ➔ **Has Many** ➔ `Booking` / `Review` / `SupportTicket` *(Satu tamu memiliki banyak riwayat transaksi & ulasan)*
