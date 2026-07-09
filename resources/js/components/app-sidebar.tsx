@@ -40,11 +40,6 @@ export function AppSidebar() {
     if (role === 'guest') {
         mainNavItems.push(
             {
-                title: 'Beranda',
-                href: '/',
-                icon: Home,
-            },
-            {
                 title: 'Cari Kamar',
                 href: '/explore',
                 icon: Compass,
@@ -53,6 +48,16 @@ export function AppSidebar() {
                 title: 'Dashboard Tamu',
                 href: '/guest/dashboard',
                 icon: LayoutGrid,
+            },
+            {
+                title: 'Pesanan Saya',
+                href: '/guest/bookings',
+                icon: Hotel,
+            },
+            {
+                title: 'Keluhan Saya',
+                href: '/guest/complaints',
+                icon: AlertOctagon,
             },
             {
                 title: 'Favorit Saya',

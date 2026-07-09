@@ -368,8 +368,8 @@ class AdminController extends Controller
         // Settings are stored inside cache or JSON files or config
         $settings = [
             'homestay_name' => cache('branding_homestay_name', 'Yuri-HomeStay'),
-            'logo' => cache('branding_logo', '/images/logo.png'),
-            'favicon' => cache('branding_favicon', '/favicon.ico'),
+            'logo' => str_replace('/storage/', '/uploads/', cache('branding_logo', '/images/logo.png')),
+            'favicon' => str_replace('/storage/', '/uploads/', cache('branding_favicon', '/favicon.ico')),
             'watermark_text' => cache('branding_watermark_text', 'HOMESTAY-APPS'),
             'copy_watermark' => cache('branding_copy_watermark', 'Salinan dari HomeStay-Apps. Pelajari lebih lanjut: '),
             'phone' => cache('branding_phone', '0852-6001-4053'),

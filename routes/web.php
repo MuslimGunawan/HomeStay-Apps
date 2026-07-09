@@ -5,6 +5,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\HostController;
 use App\Http\Controllers\PublicSupportController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -51,6 +52,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/wishlist/toggle/{homestayId}', [GuestController::class, 'toggleWishlist'])->name('guest.wishlist.toggle');
         Route::post('/bookings/{bookingId}/review', [GuestController::class, 'submitReview'])->name('guest.review.submit');
         Route::post('/bookings/{bookingId}/complaint', [GuestController::class, 'submitComplaint'])->name('guest.complaint.submit');
+
+        // New Complaints page routes
+        Route::get('/complaints', [GuestController::class, 'complaints'])->name('guest.complaints');
+        Route::post('/complaints/store', [GuestController::class, 'submitComplaintFromPage'])->name('guest.complaints.store');
+        Route::get('/bookings', [GuestController::class, 'bookings'])->name('guest.bookings');
     });
 
     /* -------------------------------------------------------------
@@ -136,3 +142,42 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/settings.php';
+
+// Shared hosting utility route to link storage folder
+Route::get('/linkstorage', function () {
+    try {
+        Artisan::call('storage:link');
+
+        return 'Storage link created successfully!';
+    } catch (Exception $e) {
+        return 'Error: '.$e->getMessage();
+    }
+});
+
+// Shared hosting utility route to clear caches
+Route::get('/clear-cache', function () {
+    try {
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
+        Artisan::call('route:clear');
+        Artisan::call('view:clear');
+
+        return 'All caches cleared successfully!';
+    } catch (Exception $e) {
+        return 'Error: '.$e->getMessage();
+    }
+});
+
+// Fallback route to serve storage files directly when symlink is missing/unsupported
+Route::get('/uploads/{path}', function ($path) {
+    $filePath = storage_path('app/public/'.$path);
+
+    if (! file_exists($filePath)) {
+        abort(404);
+    }
+
+    $file = file_get_contents($filePath);
+    $type = mime_content_type($filePath);
+
+    return response($file)->header('Content-Type', $type);
+})->where('path', '.*');

@@ -69,4 +69,12 @@ class Booking extends Model
     {
         return $this->hasMany(StayComplaint::class);
     }
+
+    /**
+     * Get the payment receipt path with a fallback prefix for shared hosting.
+     */
+    public function getPaymentReceiptPathAttribute(?string $value): ?string
+    {
+        return $value ? str_replace('/storage/', '/uploads/', $value) : null;
+    }
 }

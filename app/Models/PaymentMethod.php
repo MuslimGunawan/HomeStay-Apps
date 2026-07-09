@@ -31,4 +31,12 @@ class PaymentMethod extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    /**
+     * Get the QRIS image path with a fallback prefix for shared hosting.
+     */
+    public function getQrisImagePathAttribute(?string $value): ?string
+    {
+        return $value ? str_replace('/storage/', '/uploads/', $value) : null;
+    }
 }

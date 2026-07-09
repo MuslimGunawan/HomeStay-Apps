@@ -1,4 +1,4 @@
-import { Upload, File, Image, Film, X } from 'lucide-react';
+import { Upload, File as FileIcon, Image, Film, X } from 'lucide-react';
 import { useState, useRef } from 'react';
 
 interface DragDropUploadProps {
@@ -138,7 +138,7 @@ return value;
                         </div>
                     ) : (
                         <div className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-xl w-full">
-                            <File className="h-8 w-8 text-gold shrink-0" />
+                            <FileIcon className="h-8 w-8 text-gold shrink-0" />
                             <div className="text-left overflow-hidden">
                                 <span className="block text-xs font-bold text-white truncate">
                                     {value instanceof File ? value.name : 'Uploaded File'}

@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Clipboard, Check, Eye, EyeOff, UploadCloud, FileText, CheckCircle, CreditCard, AlertTriangle } from 'lucide-react';
+import { Clipboard, Check, Eye, EyeOff, UploadCloud, FileText, CheckCircle, CreditCard, AlertTriangle, Clock, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import DragDropUpload from '@/components/DragDropUpload';
@@ -11,6 +11,7 @@ interface Booking {
     check_in: string;
     check_out: string;
     status: string;
+    payment_receipt_path?: string;
     payment_method: {
         name: string;
         type: string;
@@ -36,6 +37,7 @@ export default function Success({ booking, tempPassword, newUser }: SuccessProps
 
     const [showPassword, setShowPassword] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [isEditingReceipt, setIsEditingReceipt] = useState(false);
 
     const handleCopy = () => {
         if (tempPassword) {
@@ -64,6 +66,7 @@ export default function Success({ booking, tempPassword, newUser }: SuccessProps
         post(`/bookings/${booking.id}/receipt`, {
             onSuccess: () => {
                 toast.success('Bukti pembayaran berhasil diunggah. Menunggu verifikasi pemilik Homestay.');
+                setIsEditingReceipt(false);
             },
         });
     };
@@ -217,45 +220,137 @@ export default function Success({ booking, tempPassword, newUser }: SuccessProps
                         </div>
                     </div>
 
-                    {/* Right: Upload receipt form */}
+                    {/* Right: Upload receipt form or Status display */}
                     <div className="bg-[#111111] border border-white/5 p-6 rounded-3xl space-y-6">
-                        <div className="border-b border-white/5 pb-3">
-                            <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest font-outfit">Unggah Bukti Bayar</span>
-                            <h3 className="font-outfit text-base font-bold text-white mt-1">Konfirmasi Transfer</h3>
-                        </div>
-
-                        <form onSubmit={handleUploadSubmit} className="space-y-4">
-                            <DragDropUpload 
-                                onChange={(file) => setData('payment_receipt', file)}
-                                value={data.payment_receipt}
-                                accept="image/*"
-                                maxSizeMB={15}
-                                placeholderText="Drag & drop foto bukti transfer di sini"
-                            />
-
-                            {progress && (
-                                <div className="w-full bg-white/10 rounded-full h-1 overflow-hidden">
-                                    <div className="bg-gold h-full rounded-full transition-all" style={{ width: `${progress.percentage}%` }}></div>
+                        {booking.payment_receipt_path && !isEditingReceipt ? (
+                            <div className="space-y-6">
+                                <div className="border-b border-white/5 pb-3">
+                                    <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest font-outfit">Bukti Pembayaran</span>
+                                    <h3 className="font-outfit text-base font-bold text-white mt-1">Status Konfirmasi</h3>
                                 </div>
-                            )}
 
-                            <button
-                                type="submit"
-                                disabled={processing || !data.payment_receipt}
-                                className="w-full bg-gold disabled:bg-gold/40 text-deep-black font-extrabold text-xs py-4 rounded-xl transition-all hover:bg-white active:scale-95 flex items-center justify-center space-x-2"
-                            >
-                                <CreditCard className="h-4 w-4" />
-                                <span>{processing ? 'Sedang Mengunggah...' : 'Konfirmasi Bukti Transfer'}</span>
-                            </button>
+                                <div className="space-y-4">
+                                    <div className="relative aspect-video max-h-56 w-full rounded-2xl overflow-hidden border border-white/10 bg-black/60 shadow-inner flex items-center justify-center">
+                                        <img 
+                                            src={booking.payment_receipt_path} 
+                                            alt="Bukti Transfer" 
+                                            className="max-h-full max-w-full object-contain" 
+                                        />
+                                    </div>
 
-                            <Link
-                                href="/dashboard"
-                                className="w-full border border-white/10 hover:border-white/20 text-white font-bold text-xs py-3 rounded-xl transition-all flex items-center justify-center space-x-2"
-                            >
-                                <FileText className="h-4 w-4" />
-                                <span>Masuk ke Dasbor Saya</span>
-                            </Link>
-                        </form>
+                                    {booking.status === 'pending_approval' && (
+                                        <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-left space-y-1">
+                                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-400">
+                                                <Clock className="h-4 w-4 shrink-0" />
+                                                Menunggu Verifikasi Pemilik
+                                            </span>
+                                            <p className="text-[10px] text-white/50 leading-relaxed">
+                                                Bukti pembayaran Anda telah berhasil diunggah. Pengelola Homestay akan memeriksa transfer Anda secepatnya.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {(booking.status === 'confirmed' || booking.status === 'completed') && (
+                                        <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-left space-y-1">
+                                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+                                                <CheckCircle className="h-4 w-4 shrink-0" />
+                                                Pembayaran Terverifikasi
+                                            </span>
+                                            <p className="text-[10px] text-white/50 leading-relaxed">
+                                                Pembayaran telah disetujui. Reservasi Anda telah terkonfirmasi dengan aman. Selamat menikmati staycation Anda!
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {booking.status === 'rejected' && (
+                                        <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-left space-y-1">
+                                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-400">
+                                                <XCircle className="h-4 w-4 shrink-0" />
+                                                Bukti Transfer Ditolak
+                                            </span>
+                                            <p className="text-[10px] text-white/50 leading-relaxed">
+                                                Verifikasi pembayaran ditolak oleh pemilik. Harap periksa kembali detail transfer Anda dan kirimkan bukti yang valid.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Show Edit Button only if not confirmed/completed */}
+                                    {booking.status !== 'confirmed' && booking.status !== 'completed' && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsEditingReceipt(true)}
+                                            className="w-full border border-gold/30 hover:border-gold text-gold font-bold text-xs py-4 rounded-xl transition-all hover:bg-gold/5 active:scale-95 flex items-center justify-center space-x-2"
+                                        >
+                                            <UploadCloud className="h-4 w-4" />
+                                            <span>Unggah Ulang Bukti Baru</span>
+                                        </button>
+                                    )}
+
+                                    <Link
+                                        href="/dashboard"
+                                        className="w-full border border-white/10 hover:border-white/20 text-white font-bold text-xs py-3 rounded-xl transition-all flex items-center justify-center space-x-2"
+                                    >
+                                        <FileText className="h-4 w-4" />
+                                        <span>Masuk ke Dasbor Saya</span>
+                                    </Link>
+                                </div>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleUploadSubmit} className="space-y-4">
+                                <div className="border-b border-white/5 pb-3">
+                                    <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest font-outfit">Unggah Bukti Bayar</span>
+                                    <h3 className="font-outfit text-base font-bold text-white mt-1">
+                                        {isEditingReceipt ? 'Ganti Bukti Transfer' : 'Konfirmasi Transfer'}
+                                    </h3>
+                                </div>
+
+                                <DragDropUpload 
+                                    onChange={(file) => setData('payment_receipt', file)}
+                                    value={data.payment_receipt}
+                                    accept="image/*"
+                                    maxSizeMB={15}
+                                    placeholderText="Drag & drop foto bukti transfer di sini"
+                                />
+
+                                {progress && (
+                                    <div className="w-full bg-white/10 rounded-full h-1 overflow-hidden">
+                                        <div className="bg-gold h-full rounded-full transition-all" style={{ width: `${progress.percentage}%` }}></div>
+                                    </div>
+                                )}
+
+                                <div className="space-y-2">
+                                    <button
+                                        type="submit"
+                                        disabled={processing || !data.payment_receipt}
+                                        className="w-full bg-gold disabled:bg-gold/40 text-deep-black font-extrabold text-xs py-4 rounded-xl transition-all hover:bg-white active:scale-95 flex items-center justify-center space-x-2"
+                                    >
+                                        <CreditCard className="h-4 w-4" />
+                                        <span>{processing ? 'Sedang Mengunggah...' : 'Konfirmasi Bukti Transfer'}</span>
+                                    </button>
+
+                                    {isEditingReceipt && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsEditingReceipt(false);
+                                                setData('payment_receipt', null);
+                                            }}
+                                            className="w-full border border-white/10 hover:border-rose-500/50 text-white hover:text-rose-400 font-bold text-xs py-3 rounded-xl transition-all flex items-center justify-center space-x-2"
+                                        >
+                                            <span>Batal Ubah</span>
+                                        </button>
+                                    )}
+
+                                    <Link
+                                        href="/dashboard"
+                                        className="w-full border border-white/10 hover:border-white/20 text-white font-bold text-xs py-3 rounded-xl transition-all flex items-center justify-center space-x-2"
+                                    >
+                                        <FileText className="h-4 w-4" />
+                                        <span>Masuk ke Dasbor Saya</span>
+                                    </Link>
+                                </div>
+                            </form>
+                        )}
                     </div>
                 </div>
             </div>

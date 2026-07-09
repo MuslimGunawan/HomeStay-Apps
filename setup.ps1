@@ -12,7 +12,7 @@ function Install-Prerequisite($name, $wingetId) {
     if ($choice -eq 'Y' -or $choice -eq 'y') {
         Write-Host "Menginstal $name via winget..." -ForegroundColor Yellow
         Start-Process winget -ArgumentList "install --id $wingetId --silent --accept-source-agreements --accept-package-agreements" -Wait -NoNewWindow
-        Write-Host "✔ Proses instalasi $name selesai. Catatan: Silakan restart PowerShell Anda jika PATH belum terbarui." -ForegroundColor Green
+        Write-Host "[OK] Proses instalasi $name selesai. Catatan: Silakan restart PowerShell Anda jika PATH belum terbarui." -ForegroundColor Green
     } else {
         Write-Host "$name wajib diinstal secara manual untuk melanjutkan." -ForegroundColor Red
         exit 1
@@ -31,7 +31,7 @@ if (-not $hasPhp) {
         exit 1
     }
 } else {
-    Write-Host "✔ PHP ditemukan." -ForegroundColor Green
+    Write-Host "[OK] PHP ditemukan." -ForegroundColor Green
 }
 
 $hasComposer = Get-Command composer -ErrorAction SilentlyContinue
@@ -43,7 +43,7 @@ if (-not $hasComposer) {
         exit 1
     }
 } else {
-    Write-Host "✔ Composer ditemukan." -ForegroundColor Green
+    Write-Host "[OK] Composer ditemukan." -ForegroundColor Green
 }
 
 $hasNode = Get-Command node -ErrorAction SilentlyContinue
@@ -55,7 +55,7 @@ if (-not $hasNode) {
         exit 1
     }
 } else {
-    Write-Host "✔ Node.js ditemukan." -ForegroundColor Green
+    Write-Host "[OK] Node.js ditemukan." -ForegroundColor Green
 }
 
 # 2. Composer Install
@@ -70,9 +70,9 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "`n[3/7] Membuat file konfigurasi .env..." -ForegroundColor Cyan
 if (-not (Test-Path .env)) {
     Copy-Item .env.example .env
-    Write-Host "✔ File .env dibuat dari .env.example." -ForegroundColor Green
+    Write-Host "[OK] File .env dibuat dari .env.example." -ForegroundColor Green
 } else {
-    Write-Host "✔ File .env sudah ada." -ForegroundColor Yellow
+    Write-Host "[OK] File .env sudah ada." -ForegroundColor Yellow
 }
 
 # 4. Generate App Key
@@ -101,17 +101,17 @@ foreach ($line in $envContent) {
 }
 
 if ($dbConnection -eq "mysql") {
-    Write-Host "Menghubungkan ke MySQL ($dbHost:$dbPort) untuk memeriksa/membuat database '$dbDatabase'..." -ForegroundColor Cyan
+    Write-Host "Menghubungkan ke MySQL (${dbHost}:${dbPort}) untuk memeriksa/membuat database '$dbDatabase'..." -ForegroundColor Cyan
     # Run inline PHP script to create MySQL database
     php -r "
     try {
         `$pdo = new PDO('mysql:host=$dbHost;port=$dbPort', '$dbUsername', '$dbPassword');
         `$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        `$pdo->exec('CREATE DATABASE IF NOT EXISTS \`$dbDatabase\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
-        echo '✔ Database MySQL \`$dbDatabase\` siap.\n';
+        `$pdo->exec('CREATE DATABASE IF NOT EXISTS $dbDatabase CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+        echo 'Database MySQL $dbDatabase siap.\n';
     } catch (Exception `$e) {
         echo 'Peringatan: Gagal membuat database MySQL secara otomatis: ' . `$e->getMessage() . '\n';
-        echo 'Pastikan server MySQL Anda aktif (misal Laragon/XAMPP) dan buat database \`$dbDatabase\` secara manual.\n';
+        echo 'Pastikan server MySQL Anda aktif (misal Laragon/XAMPP) dan buat database $dbDatabase secara manual.\n';
     }
     "
 } else {
@@ -119,9 +119,9 @@ if ($dbConnection -eq "mysql") {
     $dbPath = "database/$dbDatabase"
     if (-not (Test-Path $dbPath)) {
         New-Item -ItemType File -Path $dbPath -Force | Out-Null
-        Write-Host "✔ File database SQLite dibuat." -ForegroundColor Green
+        Write-Host "[OK] File database SQLite dibuat." -ForegroundColor Green
     } else {
-        Write-Host "✔ File database SQLite sudah ada." -ForegroundColor Yellow
+        Write-Host "[OK] File database SQLite sudah ada." -ForegroundColor Yellow
     }
 }
 
@@ -131,9 +131,9 @@ if ($LASTEXITCODE -ne 0) {
     Write-Error "Gagal menjalankan migrasi database."
     exit 1
 }
-Write-Host "✔ Migrasi dan seeder database berhasil dijalankan." -ForegroundColor Green
+Write-Host "[OK] Migrasi dan seeder database berhasil dijalankan." -ForegroundColor Green
 
-# 6. NPM Install & Build
+# 6. NPM Install and Build
 Write-Host "`n[6/7] Menginstal dependensi Node.js..." -ForegroundColor Cyan
 npm install
 if ($LASTEXITCODE -ne 0) {
@@ -141,8 +141,8 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# 7. Storage Link & Default Logo Setup
-Write-Host "`n[7/7] Membuat tautan penyimpanan (storage link) & Logo..." -ForegroundColor Cyan
+# 7. Storage Link and Default Logo Setup
+Write-Host "`n[7/7] Membuat tautan penyimpanan (storage link) dan Logo..." -ForegroundColor Cyan
 php artisan storage:link --no-interaction
 
 # Ensure default logo exists in public/images/logo.png

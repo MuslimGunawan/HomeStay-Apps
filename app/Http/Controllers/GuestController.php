@@ -9,6 +9,7 @@ use App\Models\StayComplaint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
 class GuestController extends Controller
@@ -25,25 +26,53 @@ class GuestController extends Controller
     {
         $guestId = Auth::id();
 
-        $bookings = Booking::where('user_id', $guestId)
+        $totalBookings = Booking::where('user_id', $guestId)->count();
+        $activeStaysCount = Booking::where('user_id', $guestId)->where('status', 'confirmed')->count();
+        $pendingPaymentsCount = Booking::where('user_id', $guestId)->where('status', 'pending_payment')->count();
+
+        $latestStay = Booking::where('user_id', $guestId)
+            ->whereIn('status', ['pending_payment', 'pending_approval', 'confirmed'])
             ->with(['homestay.media' => function ($q) {
                 $q->where('is_primary', true);
-            }])
+            }, 'paymentMethod'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->first();
 
         // Check if temporary password warning is needed
         $needsPasswordChange = false;
         $user = Auth::user();
 
         // Simple heuristic: if phone number is in cache or was recently set, or password contains the phone number
-        if ($user->phone && hash_equals($user->password, Hash_make('Homestay@'.$user->phone))) {
+        if ($user->phone && Hash::check('Homestay@'.$user->phone, $user->password)) {
             $needsPasswordChange = true;
         }
 
         return Inertia::render('guest/dashboard', [
-            'bookings' => $bookings,
+            'totalBookings' => $totalBookings,
+            'activeStaysCount' => $activeStaysCount,
+            'pendingPaymentsCount' => $pendingPaymentsCount,
+            'latestStay' => $latestStay,
             'needsPasswordChange' => $needsPasswordChange,
+        ]);
+    }
+
+    /**
+     * Show guest full bookings history.
+     */
+    public function bookings()
+    {
+        $guestId = Auth::id();
+
+        $bookings = Booking::where('user_id', $guestId)
+            ->where('status', '!=', 'cancelled')
+            ->with(['homestay.media' => function ($q) {
+                $q->where('is_primary', true);
+            }, 'paymentMethod'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('guest/bookings', [
+            'bookings' => $bookings,
         ]);
     }
 
@@ -143,6 +172,60 @@ class GuestController extends Controller
         $request->validate([
             'message' => 'required|string|max:1000',
         ]);
+
+        StayComplaint::create([
+            'booking_id' => $booking->id,
+            'guest_id' => Auth::id(),
+            'homestay_id' => $booking->homestay_id,
+            'message' => $request->message,
+            'status' => 'pending',
+        ]);
+
+        return back()->with('success', 'Keluhan Anda berhasil dikirim langsung ke pemilik Homestay. Mohon tunggu tanggapan.');
+    }
+
+    /**
+     * Show guest complaints dashboard.
+     */
+    public function complaints()
+    {
+        $guestId = Auth::id();
+
+        $complaints = StayComplaint::where('guest_id', $guestId)
+            ->with(['homestay', 'booking'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $activeStays = Booking::where('user_id', $guestId)
+            ->where('status', 'confirmed')
+            ->with('homestay')
+            ->get();
+
+        return Inertia::render('guest/complaints', [
+            'complaints' => $complaints,
+            'activeStays' => $activeStays,
+        ]);
+    }
+
+    /**
+     * Submit complaint from complaints page.
+     */
+    public function submitComplaintFromPage(Request $request)
+    {
+        $request->validate([
+            'booking_id' => 'required|exists:bookings,id',
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $booking = Booking::findOrFail($request->booking_id);
+
+        if ($booking->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($booking->status !== 'confirmed') {
+            abort(400, 'Aduan keluhan hanya dapat dikirim selama masa sewa aktif terkonfirmasi.');
+        }
 
         StayComplaint::create([
             'booking_id' => $booking->id,

@@ -31,4 +31,12 @@ class RoomMedia extends Model
     {
         return $this->belongsTo(Homestay::class);
     }
+
+    /**
+     * Get the file path with a fallback prefix for shared hosting.
+     */
+    public function getFilePathAttribute(?string $value): ?string
+    {
+        return $value ? str_replace('/storage/', '/uploads/', $value) : null;
+    }
 }

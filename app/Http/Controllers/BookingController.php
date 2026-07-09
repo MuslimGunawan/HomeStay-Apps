@@ -290,7 +290,8 @@ class BookingController extends Controller
         }, 'paymentMethod'])->findOrFail($id);
 
         // Security check: Only owner of the booking (or admin/host) can see it
-        if (Auth::id() !== $booking->user_id && ! Auth::user()->isAdmin() && Auth::id() !== $booking->homestay->user_id) {
+        $user = Auth::user();
+        if (! $user || ($user->id !== $booking->user_id && ! $user->isAdmin() && $user->id !== $booking->homestay->user_id)) {
             abort(403);
         }
 
@@ -314,6 +315,10 @@ class BookingController extends Controller
 
         if (Auth::id() !== $booking->user_id) {
             abort(403);
+        }
+
+        if ($booking->status === 'cancelled') {
+            abort(400, 'Pemesanan ini telah dibatalkan oleh pemilik/admin dan tidak dapat diunggah bukti pembayaran lagi.');
         }
 
         if ($request->hasFile('payment_receipt')) {
