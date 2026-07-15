@@ -38,6 +38,14 @@ class GuestController extends Controller
             ->orderBy('created_at', 'desc')
             ->first();
 
+        // Get recently completed bookings that haven't been reviewed yet
+        $recentCompletedStays = Booking::where('user_id', $guestId)
+            ->where('status', 'completed')
+            ->whereDoesntHave('review')
+            ->with(['homestay'])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
         // Check if temporary password warning is needed
         $needsPasswordChange = false;
         $user = Auth::user();
@@ -52,6 +60,7 @@ class GuestController extends Controller
             'activeStaysCount' => $activeStaysCount,
             'pendingPaymentsCount' => $pendingPaymentsCount,
             'latestStay' => $latestStay,
+            'recentCompletedStays' => $recentCompletedStays,
             'needsPasswordChange' => $needsPasswordChange,
         ]);
     }
@@ -67,7 +76,7 @@ class GuestController extends Controller
             ->where('status', '!=', 'cancelled')
             ->with(['homestay.media' => function ($q) {
                 $q->where('is_primary', true);
-            }, 'paymentMethod'])
+            }, 'paymentMethod', 'review'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -142,6 +151,16 @@ class GuestController extends Controller
             'comment' => 'required|string|max:1000',
         ]);
 
+        $existingReview = Review::where('booking_id', $booking->id)->first();
+
+        if ($existingReview) {
+            // Check if it has been more than 5 minutes since creation
+            $fiveMinutesAgo = now()->subMinutes(5);
+            if ($existingReview->created_at->lt($fiveMinutesAgo)) {
+                abort(400, 'Batas waktu 5 menit untuk mengedit ulasan ini telah berakhir.');
+            }
+        }
+
         Review::updateOrCreate([
             'booking_id' => $booking->id,
         ], [
@@ -151,7 +170,7 @@ class GuestController extends Controller
             'comment' => $request->comment,
         ]);
 
-        return back()->with('success', 'Terima kasih! Ulasan Anda berhasil dikirim.');
+        return back()->with('success', $existingReview ? 'Ulasan Anda berhasil diperbarui.' : 'Terima kasih! Ulasan Anda berhasil dikirim.');
     }
 
     /**

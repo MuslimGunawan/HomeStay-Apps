@@ -131,10 +131,18 @@ return dateString;
 
         setActionProcessing(true);
         router.post(route(`${prefix}.reservations.complete` as any, { id: selectedBooking.id }), {}, {
-            onSuccess: () => {
+            onSuccess: (page) => {
                 toast.success('Reservasi tamu berhasil diselesaikan (Check-out).');
                 setOpenCompleteModal(false);
                 setActionProcessing(false);
+
+                // Check if there is a WhatsApp URL in the flash session data
+                const flash = page.props.flash as any;
+                if (flash?.checkout_notification?.whatsapp_url) {
+                    // Open WhatsApp in a new tab to send notification
+                    window.open(flash.checkout_notification.whatsapp_url, '_blank');
+                    toast.success('Membuka WhatsApp untuk mengirim notifikasi check-out kepada tamu...');
+                }
             },
             onError: () => {
                 toast.error('Gagal menyelesaikan reservasi.');

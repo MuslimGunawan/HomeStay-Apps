@@ -43,6 +43,12 @@ interface Booking {
         account_name: string;
         qris_image_path?: string;
     };
+    review?: {
+        id: number;
+        rating: number;
+        comment: string;
+        created_at: string;
+    };
 }
 
 interface GuestBookingsProps {
@@ -255,18 +261,41 @@ export default function GuestBookings({ bookings = [] }: GuestBookingsProps) {
                                             </Link>
                                         )}
 
-                                        {booking.status === 'completed' && (
-                                            <Button 
-                                                onClick={() => {
-                                                    setSelectedBooking(booking);
-                                                    setOpenReviewModal(true);
-                                                }}
-                                                className="w-full bg-white hover:bg-gold text-black font-bold text-xs py-5 rounded-xl flex items-center justify-center gap-2"
-                                            >
-                                                <MessageSquare className="h-4 w-4" />
-                                                Berikan Ulasan Kamar
-                                            </Button>
-                                        )}
+                                        {booking.status === 'completed' && (() => {
+                                             const hasReview = !!booking.review;
+                                             let canReviewOrEdit = true;
+                                             
+                                             if (hasReview && booking.review) {
+                                                 const createdTime = new Date(booking.review.created_at).getTime();
+                                                 const diffMinutes = (Date.now() - createdTime) / 1000 / 60;
+                                                 if (diffMinutes > 5) {
+                                                     canReviewOrEdit = false;
+                                                 }
+                                             }
+
+                                             if (!canReviewOrEdit) return null;
+
+                                             return (
+                                                 <Button 
+                                                     onClick={() => {
+                                                         setSelectedBooking(booking);
+                                                         if (booking.review) {
+                                                             reviewForm.setData({
+                                                                 rating: booking.review.rating,
+                                                                 comment: booking.review.comment
+                                                             });
+                                                         } else {
+                                                             reviewForm.reset();
+                                                         }
+                                                         setOpenReviewModal(true);
+                                                     }}
+                                                     className="w-full bg-white hover:bg-gold text-black font-bold text-xs py-5 rounded-xl flex items-center justify-center gap-2"
+                                                 >
+                                                     <MessageSquare className="h-4 w-4" />
+                                                     {hasReview ? 'Ubah Ulasan Kamar (Batas 5 Mnt)' : 'Berikan Ulasan Kamar'}
+                                                 </Button>
+                                             );
+                                         })()}
 
                                         <Button 
                                             onClick={() => router.get(`/bookings/${booking.id}/success`)}

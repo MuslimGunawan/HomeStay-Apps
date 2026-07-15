@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CheckoutNotification;
 use App\Models\Amenity;
 use App\Models\Booking;
 use App\Models\Homestay;
@@ -12,6 +13,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -601,7 +604,7 @@ class HostController extends Controller
      */
     public function completeReservation(string $id)
     {
-        $booking = Booking::with('homestay')->findOrFail($id);
+        $booking = Booking::with(['homestay', 'guest'])->findOrFail($id);
 
         if (! Auth::user()->isAdmin() && $booking->homestay->user_id !== Auth::id()) {
             abort(403);
@@ -611,7 +614,66 @@ class HostController extends Controller
             'status' => 'completed',
         ]);
 
-        return back()->with('success', 'Reservasi tamu berhasil diselesaikan (Check-out).');
+        // Generate WA message text
+        $guestName = $booking->guest->name;
+        $homestayName = $booking->homestay->name;
+        $waMessage = "Halo {$guestName}, terima kasih banyak telah menginap di {$homestayName}. Kami harap Anda menikmati masa tinggal Anda! Silakan berikan ulasan terbaik Anda pada dasbor tamu.";
+
+        $phone = $booking->guest->phone ?? '';
+        $cleanedPhone = preg_replace('/[^0-9]/', '', $phone);
+        if (str_starts_with($cleanedPhone, '0')) {
+            $cleanedPhone = '62'.substr($cleanedPhone, 1);
+        }
+
+        $waUrl = '';
+        if ($cleanedPhone) {
+            $waUrl = 'https://wa.me/'.$cleanedPhone.'?text='.urlencode($waMessage);
+        }
+
+        // --- Fonnte API Auto Send WA Integration ---
+        $fonnteToken = env('FONNTE_TOKEN');
+        $apiSuccess = false;
+
+        if ($fonnteToken && $cleanedPhone) {
+            try {
+                $response = Http::withHeaders([
+                    'Authorization' => $fonnteToken,
+                ])->asForm()->post('https://api.fonnte.com/send', [
+                    'target' => $cleanedPhone,
+                    'message' => $waMessage,
+                ]);
+
+                if ($response->successful()) {
+                    $apiSuccess = true;
+                }
+            } catch (\Exception $e) {
+                // Fail silently to prevent checkout breakdown
+            }
+        }
+
+        // --- Automated Email Notification ---
+        try {
+            if ($booking->guest->email) {
+                Mail::to($booking->guest->email)->send(new CheckoutNotification($booking));
+            }
+        } catch (\Exception $e) {
+            // Fail silently to prevent check-out breakdown if mail server is offline
+        }
+
+        $successMsg = 'Reservasi tamu berhasil diselesaikan (Check-out) & email terima kasih otomatis telah dikirim.';
+        if ($apiSuccess) {
+            $successMsg .= ' Notifikasi WhatsApp otomatis berhasil terkirim via Fonnte.';
+        } elseif ($fonnteToken) {
+            $successMsg .= ' Namun gagal mengirim WhatsApp otomatis (Mohon cek koneksi Fonnte Anda).';
+        }
+
+        return back()->with([
+            'success' => $successMsg,
+            'checkout_notification' => [
+                'message' => $waMessage,
+                'whatsapp_url' => $apiSuccess ? null : $waUrl, // Only show manual backup URL if API call failed
+            ],
+        ]);
     }
 
     /**

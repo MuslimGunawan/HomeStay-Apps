@@ -40,6 +40,7 @@ interface GuestDashboardProps {
     activeStaysCount: number;
     pendingPaymentsCount: number;
     latestStay: Booking | null;
+    recentCompletedStays?: any[];
     needsPasswordChange: boolean;
 }
 
@@ -48,6 +49,7 @@ export default function GuestDashboard({
     activeStaysCount = 0, 
     pendingPaymentsCount = 0, 
     latestStay = null, 
+    recentCompletedStays = [],
     needsPasswordChange 
 }: GuestDashboardProps) {
 
@@ -102,6 +104,28 @@ export default function GuestDashboard({
                         className="bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-full shrink-0"
                     >
                         Ubah Password Sekarang
+                    </Button>
+                </div>
+            )}
+
+            {/* Guest Checkout Thank You Banner */}
+            {recentCompletedStays && recentCompletedStays.length > 0 && (
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-6 text-left">
+                    <div className="flex gap-3">
+                        <CheckCircle className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                        <div>
+                            <h4 className="font-bold text-white text-sm">Terima Kasih Telah Menginap!</h4>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Kami melihat masa huni Anda di <strong className="text-gold">{recentCompletedStays[0].homestay?.name}</strong> telah selesai. 
+                                Terima kasih atas kunjungan Anda! Silakan berikan ulasan terbaik Anda agar kami terus dapat meningkatkan layanan kami.
+                            </p>
+                        </div>
+                    </div>
+                    <Button 
+                        onClick={() => router.get('/guest/bookings')} 
+                        className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs rounded-full shrink-0"
+                    >
+                        Berikan Ulasan / Rating
                     </Button>
                 </div>
             )}
