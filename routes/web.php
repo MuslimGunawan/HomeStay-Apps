@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\HostController;
 use App\Http\Controllers\PublicSupportController;
@@ -52,6 +53,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/wishlist/toggle/{homestayId}', [GuestController::class, 'toggleWishlist'])->name('guest.wishlist.toggle');
         Route::post('/bookings/{bookingId}/review', [GuestController::class, 'submitReview'])->name('guest.review.submit');
         Route::post('/bookings/{bookingId}/complaint', [GuestController::class, 'submitComplaint'])->name('guest.complaint.submit');
+
+        // Shopping Cart routes
+        Route::get('/cart', [CartController::class, 'index'])->name('guest.cart');
+        Route::post('/cart/store', [CartController::class, 'store'])->name('guest.cart.store');
+        Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('guest.cart.destroy');
+        Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('guest.cart.checkout');
 
         // New Complaints page routes
         Route::get('/complaints', [GuestController::class, 'complaints'])->name('guest.complaints');

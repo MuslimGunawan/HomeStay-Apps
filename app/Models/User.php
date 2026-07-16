@@ -54,6 +54,16 @@ class User extends Authenticatable implements PasskeyUser
     }
 
     /**
+     * Get the cart items for the guest.
+     *
+     * @return HasMany<CartItem, $this>
+     */
+    public function cartItems(): HasMany
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    /**
      * @return HasMany<Review, $this>
      */
     public function reviews(): HasMany

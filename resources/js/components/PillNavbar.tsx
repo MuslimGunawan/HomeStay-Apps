@@ -1,10 +1,10 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Home, Compass, Info, ArrowUpRight, User, LogOut, Sun, Moon } from 'lucide-react';
+import { Home, Compass, Info, ArrowUpRight, User, LogOut, Sun, Moon, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAppearance } from '@/hooks/use-appearance';
 
 export default function PillNavbar() {
-    const { auth, name } = usePage().props as any;
+    const { auth, name, cartCount = 0 } = usePage().props as any;
     const { resolvedAppearance, updateAppearance } = useAppearance();
     const isDark = resolvedAppearance === 'dark';
 
@@ -125,6 +125,22 @@ export default function PillNavbar() {
                     >
                         {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
                     </button>
+
+                    {/* Shopping Cart Button */}
+                    {(!auth?.user || auth.user.role === 'guest') && (
+                        <Link
+                            href="/guest/cart"
+                            className="relative p-2 rounded-full border border-black/10 dark:border-white/10 hover:border-gold dark:hover:border-gold hover:text-gold dark:hover:text-gold text-neutral-800 dark:text-white/80 bg-black/5 dark:bg-white/5 transition-all duration-300"
+                            title="Keranjang Belanja"
+                        >
+                            <ShoppingCart className="h-3.5 w-3.5" />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </Link>
+                    )}
 
                     {auth?.user ? (
                         <div className="flex items-center space-x-3">

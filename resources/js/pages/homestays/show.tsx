@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { MapPin, Star, Users, Home, Calendar, Sparkles, ChevronLeft, ChevronRight, Share2, AlertCircle, ChevronDown, Video as VideoIcon } from 'lucide-react';
+import { MapPin, Star, Users, Home, Calendar, Sparkles, ChevronLeft, ChevronRight, Share2, AlertCircle, ChevronDown, Video as VideoIcon, ShoppingCart } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 import Lightbox from "yet-another-react-lightbox";
@@ -473,6 +473,34 @@ return;
         router.get(`/homestays/${homestay.slug}/checkout`, bookingDetails);
     };
 
+    const handleAddToCart = () => {
+        if (!bookingDetails.check_in || !bookingDetails.check_out) {
+            setBookingError('Silakan lengkapi tanggal Check-in dan Check-out untuk keranjang.');
+            return;
+        }
+
+        if (bookingError) {
+            return;
+        }
+
+        router.post('/guest/cart/store', {
+            homestay_id: homestay.id,
+            check_in: bookingDetails.check_in,
+            check_out: bookingDetails.check_out,
+            total_guests: bookingDetails.total_guests,
+        }, {
+            onError: (errors: any) => {
+                if (errors.check_in) {
+                    setBookingError(errors.check_in);
+                } else if (errors.total_guests) {
+                    setBookingError(errors.total_guests);
+                } else {
+                    alert('Terjadi kesalahan. Pastikan Anda sudah login.');
+                }
+            }
+        });
+    };
+
     // WhatsApp dynamic contact link
     const getWhatsAppUrl = () => {
         const phone = (homestay.host?.phone || '').replace(/^0/, '62');
@@ -789,15 +817,26 @@ return;
                                 </div>
                             )}
 
-                            {/* CTA Action button */}
-                            <button
-                                onClick={proceedToCheckout}
-                                disabled={!!bookingError}
-                                className="w-full bg-gold disabled:bg-gold/40 text-deep-black font-bold text-xs py-4 rounded-xl transition-all hover:bg-white active:scale-95 flex items-center justify-center space-x-2"
-                            >
-                                <Calendar className="h-4 w-4" />
-                                <span>Pesan Kamar</span>
-                            </button>
+                             {/* CTA Action button */}
+                             <div className="flex gap-2.5">
+                                 <button
+                                     onClick={proceedToCheckout}
+                                     disabled={!!bookingError}
+                                     className="flex-1 bg-gold disabled:bg-gold/40 text-deep-black font-bold text-xs py-4 rounded-xl transition-all hover:bg-white active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
+                                 >
+                                     <Calendar className="h-4 w-4" />
+                                     <span>Pesan Langsung</span>
+                                 </button>
+                                 <button
+                                     type="button"
+                                     onClick={handleAddToCart}
+                                     disabled={!!bookingError}
+                                     className="flex-1 bg-neutral-900 border border-gold/40 hover:bg-gold/10 text-white font-bold text-xs py-4 rounded-xl transition-all active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
+                                 >
+                                     <ShoppingCart className="h-4 w-4 text-gold" />
+                                     <span>Ke Keranjang</span>
+                                 </button>
+                             </div>
 
                             {/* Secondary contact button via WhatsApp */}
                             <a

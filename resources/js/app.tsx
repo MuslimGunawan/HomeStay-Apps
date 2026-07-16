@@ -25,6 +25,7 @@ createInertiaApp({
             case pageName.startsWith('homestays/'):
             case pageName.startsWith('bookings/'):
             case pageName.startsWith('support/'):
+            case pageName === 'guest/cart':
                 return null;
             case pageName.startsWith('auth/'):
                 return AuthLayout;
