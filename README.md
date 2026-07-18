@@ -4,11 +4,61 @@ HomeStay-Apps adalah platform pemesanan kamar homestay/penginapan berbasis web m
 
 ---
 
+## 📜 Lembar Konsultasi & Persetujuan UAS (ACC Dosen)
+
+Berikut adalah bukti lembar konsultasi projek yang telah disetujui (ACC) oleh dosen pengampu mata kuliah Pemrograman Aplikasi Web Lanjut:
+
+<div align="center">
+  <img src="Lembaran-Konsul-Projek-Web-Lanjut-UAS-A1-Kelompok4-HomestayApps.jpg" alt="Lembar Konsultasi ACC UAS" width="75%" style="border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+</div>
+
+---
+
+## 🔄 Alur & Flowchart Visual Sistem (Visual Web Workflows)
+
+Berikut adalah diagram alur interaksi multi-role (Tamu, Host, Admin) dalam ekosistem pemesanan Yuri Homestay:
+
+```mermaid
+graph TD
+    %% Tamu Workflow
+    subgraph Tamu [Aktivitas Tamu/Guest]
+        G1[Explore Kamar] -->|Pilih Tanggal & Tamu| G2{Reservasi}
+        G2 -->|Opsi A: Pesan Instan| G3[Isi Form & Langsung Checkout]
+        G2 -->|Opsi B: Keranjang| G4[Tambah ke Keranjang Belanja]
+        G4 -->|Multi-room Booking| G3
+        G3 -->|Auto-Register Tamu| G5[Unggah Bukti Transfer QRIS/Bank]
+        G5 -->|Masa Sewa Selesai| G6[Tulis Ulasan Kamar & Keluhan]
+    end
+
+    %% Host Workflow
+    subgraph Host [Aktivitas Host/Pemilik]
+        H1[Daftar Kamar Baru] --> H2[Kelola Kamar & Upload Galeri]
+        H2 --> H3[Setujui Pembayaran Tamu]
+        H3 -->|Sistem Auto-Checkout| H4[Check-out Tamu Otomatis]
+        H4 -->|Fonnte WA API / Fallback wa.me| H5[Kirim Pemberitahuan WhatsApp & Email Terimakasih]
+    end
+
+    %% Admin Workflow
+    subgraph Admin [Aktivitas Super Admin]
+        A1[Kelola Akun Pengguna] --> A2[Kelola Metode Pembayaran & QRIS]
+        A2 --> A3[Pengaturan Branding Logo & Kontak]
+        A3 --> A4[Tangani Tiket Bantuan & Support]
+    end
+
+    %% Relasi Alur
+    G5 -->|Verifikasi Transaksi| H3
+    G6 -->|Terima Notifikasi Keluhan| H3
+```
+
+---
+
 ## 🛠️ Stack Teknologi & Fitur Unggulan
 
-- **Backend:** Laravel 13 (PHP 8.3+), Fortify (Authentication).
+- **Backend:** Laravel 13 (PHP 8.5), Fortify (Authentication).
 - **Frontend:** React 19, Inertia.js v3 (dengan XHR built-in client, deferred props, polling), Tailwind CSS v4.
 - **Database:** MySQL (Database relasional handal untuk manajemen transaksi penginapan).
+- **Keranjang Belanja Multi-Kamar (Shopping Cart):** Memungkinkan tamu untuk menaruh lebih dari 1 kamar sekaligus ke dalam keranjang, meninjau subtotal secara terperinci, dan melakukan checkout sekaligus dalam 1 transaksi pembayaran.
+- **Sistem Auto-Checkout & Pemberitahuan Otomatis:** Perintah terjadwal (`app:auto-checkout-guests`) otomatis men-checkout tamu saat masa huni habis, mengirimkan email terima kasih (SMTP), dan mengarahkan WhatsApp otomatis (mengintegrasikan Fonnte API Gateway).
 - **Fitur Proteksi Media:** 
   - Penempelan watermark transparan secara otomatis di backend menggunakan GD Library.
   - Penonaktifan klik kanan (`contextmenu`) dan penyeretan (`draggable="false"`) pada galeri foto.
