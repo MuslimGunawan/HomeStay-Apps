@@ -11,9 +11,11 @@ import {
     Users, 
     Star,
     Upload,
-    FileText
+    FileText,
+    ImageIcon,
+    X
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,8 +83,10 @@ export default function GuestBookings({ bookings = [] }: GuestBookingsProps) {
     
     // Receipt Upload Form
     const receiptForm = useForm({
-        receipt: null as File | null,
+        payment_receipt: null as File | null,
     });
+    const [filePreview, setFilePreview] = useState<{ name: string; size: string } | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Review Form
     const reviewForm = useForm({
@@ -107,11 +111,25 @@ export default function GuestBookings({ bookings = [] }: GuestBookingsProps) {
                 toast.success('Bukti transfer berhasil diunggah. Mohon tunggu verifikasi Host.');
                 setOpenReceiptModal(false);
                 receiptForm.reset();
+                setFilePreview(null);
             },
-            onError: () => {
-                toast.error('Gagal mengunggah bukti transfer. Pastikan file berupa foto maksimal 15MB.');
+            onError: (errors) => {
+                const msg = errors.payment_receipt || 'Gagal mengunggah bukti transfer. Pastikan file berupa foto maksimal 15MB.';
+                toast.error(msg);
             }
         });
+    };
+
+    const handleFileSelect = (file: File | null) => {
+        if (!file) {
+            receiptForm.setData('payment_receipt', null);
+            setFilePreview(null);
+            return;
+        }
+        receiptForm.setData('payment_receipt', file);
+        const sizeKb = file.size / 1024;
+        const sizeStr = sizeKb > 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb.toFixed(0)} KB`;
+        setFilePreview({ name: file.name, size: sizeStr });
     };
 
     const handleSubmitReview = (e: React.FormEvent) => {
@@ -349,17 +367,54 @@ export default function GuestBookings({ bookings = [] }: GuestBookingsProps) {
                     )}
 
                     <form onSubmit={handleUploadReceipt} className="space-y-4 pt-4 border-t border-white/5">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="receipt" className="text-xs text-white/60">Pilih Berkas Foto Bukti Transfer</Label>
-                            <Input 
-                                id="receipt"
-                                type="file" 
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold text-white/60 uppercase tracking-wider">Pilih Berkas Foto Bukti Transfer</Label>
+                            
+                            {/* Hidden native file input */}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
                                 accept="image/*"
-                                onChange={(e) => receiptForm.setData('receipt', e.target.files ? e.target.files[0] : null)}
-                                className="w-full bg-black/40 border-white/10 px-4 py-2.5 rounded-xl text-xs focus:border-gold cursor-pointer"
+                                className="sr-only"
+                                onChange={(e) => handleFileSelect(e.target.files ? e.target.files[0] : null)}
                             />
-                            {receiptForm.errors.receipt && (
-                                <span className="text-[10px] text-red-400">{receiptForm.errors.receipt}</span>
+
+                            {/* Premium drag-drop zone */}
+                            {!filePreview ? (
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full group relative flex flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed border-white/10 bg-black/20 px-6 py-8 text-center transition-all duration-300 hover:border-gold/50 hover:bg-gold/5 cursor-pointer"
+                                >
+                                    <div className="h-12 w-12 rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-all">
+                                        <Upload className="h-5 w-5 text-gold" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-white group-hover:text-gold transition-colors">Klik untuk memilih foto</p>
+                                        <p className="text-[10px] text-white/30 mt-0.5">JPG, PNG, WEBP — Maks. 15 MB</p>
+                                    </div>
+                                </button>
+                            ) : (
+                                <div className="relative flex items-center gap-3 rounded-2xl border border-gold/30 bg-gold/5 px-4 py-3.5">
+                                    <div className="h-10 w-10 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
+                                        <ImageIcon className="h-5 w-5 text-gold" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-bold text-white truncate">{filePreview.name}</p>
+                                        <p className="text-[10px] text-white/40 mt-0.5">{filePreview.size} · Siap dikirim</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => { handleFileSelect(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                                        className="h-7 w-7 rounded-full bg-white/5 hover:bg-rose-500/20 hover:text-rose-400 text-white/40 flex items-center justify-center transition-all cursor-pointer"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                </div>
+                            )}
+
+                            {receiptForm.errors.payment_receipt && (
+                                <span className="text-[10px] text-red-400">{receiptForm.errors.payment_receipt}</span>
                             )}
                         </div>
 
@@ -374,7 +429,7 @@ export default function GuestBookings({ bookings = [] }: GuestBookingsProps) {
                             </Button>
                             <Button 
                                 type="submit" 
-                                disabled={receiptForm.processing || !receiptForm.data.receipt}
+                                disabled={receiptForm.processing || !receiptForm.data.payment_receipt}
                                 className="bg-gold hover:bg-white text-black font-bold text-xs px-6 rounded-xl"
                             >
                                 {receiptForm.processing ? 'Mengirim...' : 'Kirim Bukti Transfer'}
