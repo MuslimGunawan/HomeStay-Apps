@@ -22,12 +22,20 @@ Berikut adalah diagram alur interaksi multi-role (Tamu, Host, Admin) dalam ekosi
 graph TD
     %% Tamu Workflow
     subgraph Tamu [Aktivitas Tamu/Guest]
-        G1[Explore Kamar] -->|Pilih Tanggal & Tamu| G2{Reservasi}
+        G0[Kunjungi Website] --> G1[Explore Kamar]
+        G1 -->|Pilih Tanggal & Tamu| G2{Cara Pesan?}
         G2 -->|Opsi A: Pesan Instan| G3[Isi Form & Langsung Checkout]
-        G2 -->|Opsi B: Keranjang| G4[Tambah ke Keranjang Belanja]
-        G4 -->|Multi-room Booking| G3
-        G3 -->|Auto-Register Tamu| G5[Unggah Bukti Transfer QRIS/Bank]
-        G5 -->|Masa Sewa Selesai| G6[Tulis Ulasan Kamar & Keluhan]
+        G2 -->|Opsi B: Keranjang| G4{Status Login?}
+        G4 -->|Sudah Login| G4a[Keranjang di Database]
+        G4 -->|Belum Login - Tamu Baru| G4b[Keranjang di Session Browser]
+        G4a --> G4c[Notif Popover + Toast Muncul]
+        G4b --> G4c
+        G4c --> G4d[Multi-room Checkout]
+        G4d --> G3
+        G3 -->|Auto-Register & Auto-Login| G5[Unggah Bukti Transfer - UI Premium]
+        G5 -->|Masa Sewa Selesai| G6[Tulis Ulasan Kamar]
+        G6 -->|Dalam 5 Menit Pertama| G6a[Edit Ulasan]
+        G6 -->|Lebih dari 5 Menit| G6b[Ulasan Terkunci]
     end
 
     %% Host Workflow
@@ -35,7 +43,7 @@ graph TD
         H1[Daftar Kamar Baru] --> H2[Kelola Kamar & Upload Galeri]
         H2 --> H3[Setujui Pembayaran Tamu]
         H3 -->|Sistem Auto-Checkout| H4[Check-out Tamu Otomatis]
-        H4 -->|Fonnte WA API / Fallback wa.me| H5[Kirim Pemberitahuan WhatsApp & Email Terimakasih]
+        H4 -->|Fonnte WA API / Fallback wa.me| H5[Kirim Pemberitahuan WhatsApp & Email]
     end
 
     %% Admin Workflow
@@ -47,7 +55,7 @@ graph TD
 
     %% Relasi Alur
     G5 -->|Verifikasi Transaksi| H3
-    G6 -->|Terima Notifikasi Keluhan| H3
+    G6 -->|Review Tampil di Landing Page| G1
 ```
 
 ---
@@ -57,13 +65,19 @@ graph TD
 - **Backend:** Laravel 13 (PHP 8.5), Fortify (Authentication).
 - **Frontend:** React 19, Inertia.js v3 (dengan XHR built-in client, deferred props, polling), Tailwind CSS v4.
 - **Database:** MySQL (Database relasional handal untuk manajemen transaksi penginapan).
-- **Keranjang Belanja Multi-Kamar (Shopping Cart):** Memungkinkan tamu untuk menaruh lebih dari 1 kamar sekaligus ke dalam keranjang, meninjau subtotal secara terperinci, dan melakukan checkout sekaligus dalam 1 transaksi pembayaran.
+- **Keranjang Belanja Multi-Kamar (Shopping Cart):**
+  - Tamu yang **belum login** dapat langsung menggunakan keranjang (item disimpan di session browser).
+  - Tamu yang **sudah login** keranjangnya tersimpan di database (`cart_items`).
+  - Saat klik tombol "Ke Keranjang", halaman **tidak berpindah** — muncul 2 notifikasi interaktif: popover di atas tombol + floating toast di pojok kanan bawah.
+  - Checkout multi-kamar sekaligus dalam 1 transaksi pembayaran.
 - **Sistem Auto-Checkout & Pemberitahuan Otomatis:** Perintah terjadwal (`app:auto-checkout-guests`) otomatis men-checkout tamu saat masa huni habis, mengirimkan email terima kasih (SMTP), dan mengarahkan WhatsApp otomatis (mengintegrasikan Fonnte API Gateway).
+- **Upload Bukti Transfer Premium:** Zona drag-and-drop bergaya premium untuk upload bukti transfer, lengkap dengan preview nama file & ukuran sebelum dikirim.
 - **Fitur Proteksi Media:** 
   - Penempelan watermark transparan secara otomatis di backend menggunakan GD Library.
   - Penonaktifan klik kanan (`contextmenu`) dan penyeretan (`draggable="false"`) pada galeri foto.
   - Penempelan watermark link sumber otomatis saat menyalin teks deskripsi (*copy source watermark listener*).
-- **Auto-Register Tamu:** Akun tamu otomatis terbuat secara instan saat melakukan checkout pemesanan kamar tanpa harus mendaftar manual.
+- **Auto-Register Tamu:** Akun tamu otomatis terbuat secara instan saat melakukan checkout pemesanan kamar (termasuk checkout dari keranjang) tanpa harus mendaftar manual.
+- **Batas Waktu Edit Ulasan:** Tamu hanya dapat mengedit ulasan dalam **5 menit** pertama setelah ulasan pertama ditulis. Setelah itu tombol edit otomatis tersembunyi.
 - **Pusat Bantuan Terpadu:** Tombol WhatsApp dinamis langsung ke Host serta formulir tiket support terpusat ke Super Admin.
 
 ---
@@ -179,11 +193,12 @@ Untuk memudahkan pengujian fungsionalitas multi-role, database seeder kami telah
 ## 🎯 Fitur & Alur Kerja Pengguna
 
 1. **Eksplorasi & Reservasi Kamar:** Tamu memilih tanggal masuk/keluar di kalender, mengisi form pesanan (nama, nomor WA, email, bank transfer), lalu menekan tombol pesan.
-2. **Auto-Register & Auto-Login:** Sistem otomatis mendaftarkan akun tamu tersebut, menghasilkan password sementara yang aman, mengautentikasikannya, serta menampilkan struk pemesanan beserta password sementara.
-3. **Unggah Bukti Transfer:** Tamu mentransfer secara manual ke rekening bank/QRIS milik Yuri Homestay dan mengunggah bukti bayarnya.
-4. **Persetujuan Host:** Pemilik homestay (Host) atau Admin memverifikasi bukti transfer dan menyetujui reservasi agar berstatus `confirmed` (terkonfirmasi).
-5. **Pemantauan Kamar & Komunikasi:** Tamu yang sedang menginap dapat mengirim keluhan/aduan langsung dari dasbor tamu ke pemilik homestay. Tamu juga dapat menghubungi WhatsApp Host melalui tombol dinamis yang disediakan.
-6. **Sistem Ulasan (Review):** Setelah waktu tinggal selesai, tamu dapat memberikan nilai rating (1-5 bintang) dan komentar ulasan yang akan tampil secara publik di halaman detail kamar dan landing page.
+2. **Keranjang Belanja (Tanpa Login):** Tamu — termasuk pengunjung baru yang belum punya akun — dapat langsung menambahkan beberapa kamar ke keranjang, meninjau total biaya, lalu checkout sekaligus. Sistem akan **auto-register** dan **auto-login** saat checkout.
+3. **Auto-Register & Auto-Login:** Sistem otomatis mendaftarkan akun tamu tersebut, menghasilkan password sementara yang aman, mengautentikasikannya, serta menampilkan struk pemesanan beserta password sementara.
+4. **Unggah Bukti Transfer:** Tamu mentransfer secara manual ke rekening bank/QRIS milik Yuri Homestay dan mengunggah bukti bayarnya melalui zona upload premium bergaya drag-and-drop.
+5. **Persetujuan Host:** Pemilik homestay (Host) atau Admin memverifikasi bukti transfer dan menyetujui reservasi agar berstatus `confirmed` (terkonfirmasi).
+6. **Pemantauan Kamar & Komunikasi:** Tamu yang sedang menginap dapat mengirim keluhan/aduan langsung dari dasbor tamu ke pemilik homestay. Tamu juga dapat menghubungi WhatsApp Host melalui tombol dinamis yang disediakan.
+7. **Sistem Ulasan (Review) dengan Batas Waktu Edit:** Setelah waktu tinggal selesai, tamu dapat memberikan nilai rating (1-5 bintang) dan komentar ulasan. Ulasan dapat **diedit dalam 5 menit** pertama sejak ditulis, setelah itu tombol edit tersembunyi otomatis.
 
 ---
 
@@ -212,6 +227,11 @@ Aplikasi ini menggunakan database **MySQL** dengan skema relasi terstruktur seba
 - **`bookings`**: Transaksi pemesanan kamar oleh Tamu (Guest).
   - `status`: Alur status booking (`pending_payment`, `pending_approval`, `confirmed`, `completed`, `cancelled`).
   - `payment_receipt_path`: File bukti transfer yang diunggah oleh Tamu.
+- **`cart_items`**: Item keranjang belanja untuk pemesanan multi-kamar sekaligus.
+  - `user_id`: Referensi ke akun tamu yang memiliki keranjang.
+  - `homestay_id`: Referensi ke kamar yang ditambahkan ke keranjang.
+  - `check_in` & `check_out`: Tanggal reservasi yang dipilih per item keranjang.
+  - `total_guests`: Jumlah tamu untuk item kamar tersebut.
 - **`reviews`**: Penilaian rating (1-5 bintang) dan komentar ulasan dari Tamu pasca check-out.
 - **`stay_complaints`**: Sistem pengaduan keluhan Tamu langsung ke Host selama masa menginap.
 - **`support_tickets`**: Layanan aduan/pertanyaan pengguna ke Super Admin.
