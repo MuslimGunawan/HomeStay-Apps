@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\CartItem;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -48,7 +49,14 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'cartCount' => $request->user() && $request->user()->isGuest() ? \App\Models\CartItem::where('user_id', $request->user()->id)->count() : 0,
+            'cartCount' => (function () use ($request) {
+                $user = $request->user();
+                $dbCount = ($user && $user->isGuest()) ? CartItem::where('user_id', $user->id)->count() : 0;
+                $sessionCount = count(session('cart', []));
+
+                // If user is logged in, use DB count; otherwise use session count
+                return $user ? $dbCount : $sessionCount;
+            })(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

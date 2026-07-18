@@ -25,6 +25,12 @@ Route::post('/bookings/{id}/receipt', [BookingController::class, 'uploadReceipt'
 Route::get('/help', [PublicSupportController::class, 'showHelpCenter'])->name('support.help');
 Route::post('/help/submit', [PublicSupportController::class, 'submitSupport'])->name('support.submit');
 
+// Shopping Cart routes — accessible by guests (logged-in OR anonymous via session)
+Route::get('/guest/cart', [CartController::class, 'index'])->name('guest.cart');
+Route::post('/guest/cart/store', [CartController::class, 'store'])->name('guest.cart.store');
+Route::delete('/guest/cart/{id}', [CartController::class, 'destroy'])->name('guest.cart.destroy');
+Route::post('/guest/cart/checkout', [CartController::class, 'checkout'])->name('guest.cart.checkout');
+
 /*
 |--------------------------------------------------------------------------
 | Authenticated Routes
@@ -54,11 +60,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/bookings/{bookingId}/review', [GuestController::class, 'submitReview'])->name('guest.review.submit');
         Route::post('/bookings/{bookingId}/complaint', [GuestController::class, 'submitComplaint'])->name('guest.complaint.submit');
 
-        // Shopping Cart routes
-        Route::get('/cart', [CartController::class, 'index'])->name('guest.cart');
-        Route::post('/cart/store', [CartController::class, 'store'])->name('guest.cart.store');
-        Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('guest.cart.destroy');
-        Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('guest.cart.checkout');
+        // (Cart routes moved to public section below)
 
         // New Complaints page routes
         Route::get('/complaints', [GuestController::class, 'complaints'])->name('guest.complaints');

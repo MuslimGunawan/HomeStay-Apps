@@ -495,7 +495,7 @@ return;
                 } else if (errors.total_guests) {
                     setBookingError(errors.total_guests);
                 } else {
-                    alert('Terjadi kesalahan. Pastikan Anda sudah login.');
+                    setBookingError('Gagal menambahkan ke keranjang. Silakan coba lagi.');
                 }
             }
         });

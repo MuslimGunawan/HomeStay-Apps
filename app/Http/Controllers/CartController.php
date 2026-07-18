@@ -17,12 +17,25 @@ use Inertia\Inertia;
 class CartController extends Controller
 {
     /**
-     * View Guest Shopping Cart.
+     * Determine if the current visitor is using a session-based (anonymous) cart.
      */
-    public function index()
+    private function isAnonymous(): bool
     {
-        $guestId = Auth::id();
-        $cartItems = CartItem::where('user_id', $guestId)
+        return ! Auth::check();
+    }
+
+    /**
+     * Retrieve cart items, regardless of anonymous or authenticated.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function getCartItems(): array
+    {
+        if ($this->isAnonymous()) {
+            return session('cart', []);
+        }
+
+        return CartItem::where('user_id', Auth::id())
             ->with(['homestay.media' => function ($q) {
                 $q->where('is_primary', true);
             }])
@@ -33,8 +46,66 @@ class CartController extends Controller
                 $days = $checkIn->diffInDays($checkOut);
                 $item->days = $days;
                 $item->price_subtotal = $item->homestay->price_per_night * $days;
+
                 return $item;
-            });
+            })
+            ->toArray();
+    }
+
+    /**
+     * View Guest Shopping Cart.
+     */
+    public function index()
+    {
+        if ($this->isAnonymous()) {
+            $rawCart = session('cart', []);
+            $cartItems = collect($rawCart)->map(function ($item) {
+                $homestay = Homestay::with(['media' => function ($q) {
+                    $q->where('is_primary', true);
+                }])->find($item['homestay_id']);
+
+                if (! $homestay) {
+                    return null;
+                }
+
+                $checkIn = Carbon::parse($item['check_in']);
+                $checkOut = Carbon::parse($item['check_out']);
+                $days = $checkIn->diffInDays($checkOut);
+
+                return [
+                    'id' => $item['cart_key'],
+                    'check_in' => $item['check_in'],
+                    'check_out' => $item['check_out'],
+                    'total_guests' => $item['total_guests'],
+                    'days' => $days,
+                    'price_subtotal' => $homestay->price_per_night * $days,
+                    'homestay' => [
+                        'id' => $homestay->id,
+                        'name' => $homestay->name,
+                        'city' => $homestay->city,
+                        'address' => $homestay->address,
+                        'price_per_night' => $homestay->price_per_night,
+                        'media' => $homestay->media->toArray(),
+                    ],
+                ];
+            })->filter()->values()->toArray();
+        } else {
+            $cartItems = CartItem::where('user_id', Auth::id())
+                ->with(['homestay.media' => function ($q) {
+                    $q->where('is_primary', true);
+                }])
+                ->get()
+                ->map(function ($item) {
+                    $checkIn = Carbon::parse($item->check_in);
+                    $checkOut = Carbon::parse($item->check_out);
+                    $days = $checkIn->diffInDays($checkOut);
+                    $item->days = $days;
+                    $item->price_subtotal = $item->homestay->price_per_night * $days;
+
+                    return $item;
+                })
+                ->toArray();
+        }
 
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
 
@@ -45,7 +116,7 @@ class CartController extends Controller
     }
 
     /**
-     * Add Homestay to Shopping Cart.
+     * Add Homestay to Shopping Cart (session for anonymous, DB for logged-in).
      */
     public function store(Request $request)
     {
@@ -56,7 +127,6 @@ class CartController extends Controller
             'total_guests' => 'required|integer|min:1',
         ]);
 
-        $guestId = Auth::id();
         $homestay = Homestay::findOrFail($request->homestay_id);
 
         if ($request->total_guests > $homestay->max_guests) {
@@ -83,15 +153,31 @@ class CartController extends Controller
             return back()->withErrors(['check_in' => 'Kamar ini sudah terbooking pada rentang tanggal tersebut.']);
         }
 
-        // Check if already in cart (update dates instead of duplicating)
-        CartItem::updateOrCreate([
-            'user_id' => $guestId,
-            'homestay_id' => $homestay->id,
-        ], [
-            'check_in' => $checkIn->format('Y-m-d'),
-            'check_out' => $checkOut->format('Y-m-d'),
-            'total_guests' => $request->total_guests,
-        ]);
+        if ($this->isAnonymous()) {
+            // Session-based cart for anonymous visitors
+            $cart = session('cart', []);
+            $cartKey = 'homestay_'.$homestay->id;
+
+            $cart[$cartKey] = [
+                'cart_key' => $cartKey,
+                'homestay_id' => $homestay->id,
+                'check_in' => $checkIn->format('Y-m-d'),
+                'check_out' => $checkOut->format('Y-m-d'),
+                'total_guests' => $request->total_guests,
+            ];
+
+            session(['cart' => $cart]);
+        } else {
+            // DB-based cart for authenticated users
+            CartItem::updateOrCreate([
+                'user_id' => Auth::id(),
+                'homestay_id' => $homestay->id,
+            ], [
+                'check_in' => $checkIn->format('Y-m-d'),
+                'check_out' => $checkOut->format('Y-m-d'),
+                'total_guests' => $request->total_guests,
+            ]);
+        }
 
         return redirect()->route('guest.cart')->with('success', 'Kamar berhasil ditambahkan ke keranjang belanja Anda.');
     }
@@ -101,6 +187,14 @@ class CartController extends Controller
      */
     public function destroy(string $id)
     {
+        if ($this->isAnonymous()) {
+            $cart = session('cart', []);
+            unset($cart[$id]);
+            session(['cart' => $cart]);
+
+            return back()->with('success', 'Item berhasil dihapus dari keranjang.');
+        }
+
         $cartItem = CartItem::findOrFail($id);
 
         if ($cartItem->user_id !== Auth::id()) {
@@ -113,35 +207,44 @@ class CartController extends Controller
     }
 
     /**
-     * Checkout Cart items simultaneously.
+     * Checkout Cart items simultaneously (supports both anonymous & authenticated).
      */
     public function checkout(Request $request)
     {
+        $isAnon = $this->isAnonymous();
+
         $request->validate([
             'payment_method_id' => 'required|exists:payment_methods,id',
-            'name' => Auth::check() ? 'nullable' : 'required|string|max:255',
-            'email' => Auth::check() ? 'nullable' : 'required|email|max:255',
-            'phone' => Auth::check() ? 'nullable' : 'required|string|max:20',
+            'name' => $isAnon ? 'required|string|max:255' : 'nullable',
+            'email' => $isAnon ? 'required|email|max:255' : 'nullable',
+            'phone' => $isAnon ? 'required|string|max:20' : 'nullable',
         ]);
-
-        $guestId = Auth::id();
-        $cartItems = CartItem::where('user_id', $guestId)->get();
-
-        if ($cartItems->isEmpty()) {
-            return back()->withErrors(['cart' => 'Keranjang belanja Anda kosong.']);
-        }
 
         $tempPassword = null;
         $newUserCreated = false;
 
+        // Build cart items list from the correct storage
+        if ($isAnon) {
+            $rawCart = session('cart', []);
+            if (empty($rawCart)) {
+                return back()->withErrors(['cart' => 'Keranjang belanja Anda kosong.']);
+            }
+        } else {
+            $dbItems = CartItem::where('user_id', Auth::id())->get();
+            if ($dbItems->isEmpty()) {
+                return back()->withErrors(['cart' => 'Keranjang belanja Anda kosong.']);
+            }
+        }
+
         try {
-            $createdBookings = DB::transaction(function () use ($request, $guestId, $cartItems, &$tempPassword, &$newUserCreated) {
-                // 1. Resolve User
+            $createdBookings = DB::transaction(function () use ($request, $isAnon, &$tempPassword, &$newUserCreated) {
+                // 1. Resolve / auto-register User
                 $user = Auth::user();
-                if (!$user) {
+
+                if (! $user) {
                     $user = User::where('email', $request->email)->first();
 
-                    if (!$user) {
+                    if (! $user) {
                         $tempPassword = 'Homestay@'.$request->phone;
                         $user = User::create([
                             'name' => $request->name,
@@ -152,12 +255,27 @@ class CartController extends Controller
                         ]);
                         $newUserCreated = true;
                     }
+
                     Auth::login($user);
+                }
+
+                // 2. Collect cart items from session OR DB
+                if ($isAnon) {
+                    $rawCart = session('cart', []);
+                    $cartItems = collect($rawCart)->map(function ($item) {
+                        return (object) [
+                            'homestay_id' => $item['homestay_id'],
+                            'check_in' => $item['check_in'],
+                            'check_out' => $item['check_out'],
+                            'total_guests' => $item['total_guests'],
+                        ];
+                    });
+                } else {
+                    $cartItems = CartItem::where('user_id', $user->id)->get();
                 }
 
                 $bookings = [];
 
-                // 2. Loop through cart items and create individual booking rows with shared payment setup
                 foreach ($cartItems as $item) {
                     $homestay = Homestay::findOrFail($item->homestay_id);
                     $checkIn = Carbon::parse($item->check_in);
@@ -165,7 +283,7 @@ class CartController extends Controller
                     $days = $checkIn->diffInDays($checkOut);
                     $totalPrice = $homestay->price_per_night * $days;
 
-                    // Pessimistic double checking overlapping dates
+                    // Pessimistic double-check for overlapping bookings
                     $overlap = Booking::where('homestay_id', $homestay->id)
                         ->whereIn('status', ['confirmed', 'pending_approval'])
                         ->where(function ($q) use ($checkIn, $checkOut) {
@@ -195,8 +313,12 @@ class CartController extends Controller
                     ]);
                 }
 
-                // 3. Clear shopping cart
-                CartItem::where('user_id', $guestId)->delete();
+                // 3. Clear cart (session or DB)
+                if ($isAnon) {
+                    session()->forget('cart');
+                } else {
+                    CartItem::where('user_id', $user->id)->delete();
+                }
 
                 return $bookings;
             });
@@ -204,10 +326,8 @@ class CartController extends Controller
             return back()->withErrors(['cart' => $e->getMessage()]);
         }
 
-        // Redirect to booking history or a custom multi-receipt success page.
-        // We'll redirect to Guest Bookings page with a unified success message!
         return redirect()->route('guest.bookings')->with([
-            'success' => 'Berhasil checkout ' . count($createdBookings) . ' kamar. Silakan unggah bukti transfer pembayaran di masing-masing kamar.',
+            'success' => 'Berhasil checkout '.count($createdBookings).' kamar. Silakan unggah bukti transfer pembayaran di masing-masing kamar.',
             'temp_password' => $tempPassword,
             'new_user' => $newUserCreated ? '1' : '0',
         ]);
