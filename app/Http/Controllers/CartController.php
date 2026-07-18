@@ -179,7 +179,7 @@ class CartController extends Controller
             ]);
         }
 
-        return redirect()->route('guest.cart')->with('success', 'Kamar berhasil ditambahkan ke keranjang belanja Anda.');
+        return back()->with('success', 'Kamar berhasil ditambahkan ke keranjang belanja Anda.');
     }
 
     /**

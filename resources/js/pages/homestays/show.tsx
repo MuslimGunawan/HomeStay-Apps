@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
-import { MapPin, Star, Users, Home, Calendar, Sparkles, ChevronLeft, ChevronRight, Share2, AlertCircle, ChevronDown, Video as VideoIcon, ShoppingCart } from 'lucide-react';
+import { MapPin, Star, Users, Home, Calendar, Sparkles, ChevronLeft, ChevronRight, Share2, AlertCircle, ChevronDown, Video as VideoIcon, ShoppingCart, CheckCircle, ArrowRight } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { Link } from '@inertiajs/react';
 
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
@@ -361,6 +362,9 @@ return m.source === 'interior';
 
     const [priceCalculations, setPriceCalculations] = useState<{ days: number; total: number } | null>(null);
     const [bookingError, setBookingError] = useState('');
+    const [cartAdded, setCartAdded] = useState(false);
+    const [cartPopover, setCartPopover] = useState(false);
+    const cartBtnRef = useRef<HTMLButtonElement>(null);
 
     const handleDateChange = (field: 'check_in' | 'check_out', value: string) => {
         const updated = { ...bookingDetails, [field]: value };
@@ -489,6 +493,18 @@ return;
             check_out: bookingDetails.check_out,
             total_guests: bookingDetails.total_guests,
         }, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                // Show both notifications
+                setCartPopover(true);
+                setCartAdded(true);
+                // Auto-dismiss after 4 seconds
+                setTimeout(() => {
+                    setCartPopover(false);
+                    setCartAdded(false);
+                }, 4000);
+            },
             onError: (errors: any) => {
                 if (errors.check_in) {
                     setBookingError(errors.check_in);
@@ -827,15 +843,46 @@ return;
                                      <Calendar className="h-4 w-4" />
                                      <span>Pesan Langsung</span>
                                  </button>
-                                 <button
-                                     type="button"
-                                     onClick={handleAddToCart}
-                                     disabled={!!bookingError}
-                                     className="flex-1 bg-neutral-900 border border-gold/40 hover:bg-gold/10 text-white font-bold text-xs py-4 rounded-xl transition-all active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
-                                 >
-                                     <ShoppingCart className="h-4 w-4 text-gold" />
-                                     <span>Ke Keranjang</span>
-                                 </button>
+                                 <div className="relative flex-1">
+                                     <button
+                                         ref={cartBtnRef}
+                                         type="button"
+                                         onClick={handleAddToCart}
+                                         disabled={!!bookingError}
+                                         className="w-full bg-neutral-900 border border-gold/40 hover:bg-gold/10 text-white font-bold text-xs py-4 rounded-xl transition-all active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
+                                     >
+                                         <ShoppingCart className="h-4 w-4 text-gold" />
+                                         <span>Ke Keranjang</span>
+                                     </button>
+
+                                     {/* Notif 1 — Popover tepat di atas tombol */}
+                                     {cartPopover && (
+                                         <div
+                                             className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50"
+                                             style={{ animation: 'slideUpFade 0.3s ease-out forwards' }}
+                                         >
+                                             <div className="relative bg-[#111] border border-gold/50 text-white rounded-2xl px-4 py-3 shadow-2xl shadow-gold/10 w-64 text-left">
+                                                 <div className="flex items-start gap-2.5">
+                                                     <div className="mt-0.5 h-7 w-7 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                                                         <ShoppingCart className="h-3.5 w-3.5 text-gold" />
+                                                     </div>
+                                                     <div>
+                                                         <p className="text-[11px] font-bold text-white leading-snug">Kamar masuk keranjang! 🛒</p>
+                                                         <p className="text-[10px] text-white/50 mt-0.5 leading-relaxed">Kamar berhasil ditambahkan. Lanjutkan cari kamar lain atau checkout sekarang.</p>
+                                                         <Link
+                                                             href="/guest/cart"
+                                                             className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-gold hover:underline"
+                                                         >
+                                                             Lihat Keranjang <ArrowRight className="h-3 w-3" />
+                                                         </Link>
+                                                     </div>
+                                                 </div>
+                                                 {/* Arrow tail */}
+                                                 <div className="absolute -bottom-[7px] left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-[#111] border-r border-b border-gold/40" />
+                                             </div>
+                                         </div>
+                                     )}
+                                 </div>
                              </div>
 
                             {/* Secondary contact button via WhatsApp */}
@@ -907,6 +954,38 @@ return;
                 zoom={{ maxZoomPixelRatio: 3 }}
                 styles={{ container: { backgroundColor: "rgba(0, 0, 0, .95)", backdropFilter: "blur(10px)" } }}
             />
+
+            {/* Notif 2 — Floating toast pojok kanan bawah */}
+            {cartAdded && (
+                <div
+                    className="fixed bottom-6 right-6 z-[9999]"
+                    style={{ animation: 'slideUpFade 0.4s ease-out forwards' }}
+                >
+                    <div className="flex items-center gap-3 bg-white dark:bg-[#1a1a1a] border border-gold/40 text-neutral-900 dark:text-white rounded-2xl px-5 py-4 shadow-2xl shadow-black/30">
+                        <div className="h-9 w-9 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                            <CheckCircle className="h-5 w-5 text-emerald-400" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold leading-snug">Berhasil ditambahkan ke keranjang!</p>
+                            <p className="text-[10px] text-neutral-500 dark:text-white/40 mt-0.5">Kamar sudah menunggu di keranjang Anda.</p>
+                        </div>
+                        <Link
+                            href="/guest/cart"
+                            className="ml-2 shrink-0 text-[10px] font-bold text-gold border border-gold/30 rounded-full px-3 py-1.5 hover:bg-gold hover:text-black transition-all"
+                        >
+                            Checkout
+                        </Link>
+                    </div>
+                </div>
+            )}
+
+            {/* Animation keyframe */}
+            <style>{`
+                @keyframes slideUpFade {
+                    from { opacity: 0; transform: translateY(12px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
         </LuxuryLayout>
     );
 }
