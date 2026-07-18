@@ -1012,15 +1012,16 @@ return null;
                                     <p className="text-xs max-w-md mx-auto text-neutral-500 dark:text-white/40">Ulasan jujur dari tamu-tamu yang telah merasakan kehangatan menginap di Yuri Homestay.</p>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full items-stretch">
                                     {reviews.slice(0, 3).map((r) => (
                                         <div 
                                             key={r.id} 
-                                            className={`p-6 border rounded-3xl space-y-4 shadow-xl backdrop-blur-xs text-left transition-all ${
+                                            className={`flex flex-col p-6 border rounded-3xl shadow-xl backdrop-blur-xs text-left transition-all ${
                                                 isDark ? 'bg-deep-charcoal/30 border-white/5' : 'bg-white border-black/5 shadow-md'
                                             }`}
                                         >
-                                            <div className="flex items-center justify-between">
+                                            {/* Top: Stars + Date */}
+                                            <div className="flex items-center justify-between mb-3">
                                                 <div className="flex items-center space-x-1 text-gold">
                                                     {Array.from({ length: r.rating }).map((_, i) => (
                                                         <Star key={i} className="h-4 w-4 fill-gold shrink-0 text-gold" />
@@ -1030,10 +1031,14 @@ return null;
                                                     {formatDate(r.created_at)}
                                                 </span>
                                             </div>
-                                            <p className={`text-xs leading-relaxed font-sans italic line-clamp-4 ${isDark ? 'text-white/60' : 'text-neutral-600'}`}>
+
+                                            {/* Comment — grows to fill remaining space */}
+                                            <p className={`flex-1 text-xs leading-relaxed font-sans italic ${isDark ? 'text-white/60' : 'text-neutral-600'}`}>
                                                 "{r.comment}"
                                             </p>
-                                            <div className={`border-t pt-3 flex items-center space-x-3 ${isDark ? 'border-white/5' : 'border-neutral-200'}`}>
+
+                                            {/* Footer: Avatar + Name — always pinned to bottom */}
+                                            <div className={`border-t pt-3 mt-4 flex items-center space-x-3 ${isDark ? 'border-white/5' : 'border-neutral-200'}`}>
                                                 <div className="h-8 w-8 overflow-hidden rounded-full bg-gold/20 flex items-center justify-center shrink-0">
                                                     {r.guest.avatar ? (
                                                         <img src={r.guest.avatar} alt="Avatar" className="h-full w-full object-cover" />
